@@ -18,11 +18,8 @@ namespace SDownload
             {
                 String link = args[0].Substring(12);
                 Sound.Notify = new NotifyHandler();
-                Sound.Notify.Show("Fetching Information...");
                 Sound song = Sound.Download(link);
-                song.Update();
-                song.AddToMusic();
-                Sound.Notify.Show(String.Format("{0} download completed!", song.Title), true);
+                Application.Run();
             }
             catch (Exception e)
             {

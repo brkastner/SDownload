@@ -11,6 +11,6 @@
     <VerifyUploadedFiles>false</VerifyUploadedFiles>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug - Song Link|AnyCPU'">
-    <StartArguments>sdownload://https://soundcloud.com/etc-etc/etc-etc-big-booty-free</StartArguments>
+    <StartArguments>sdownload://https://soundcloud.com/majorlazer/major-lazer-flux-pavilion-jah</StartArguments>
   </PropertyGroup>
 </Project>

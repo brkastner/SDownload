@@ -60,11 +60,7 @@
     <Content Include="Chrome\scripts\jquery-1.7.1.min.js" />
     <Content Include="Chrome\scripts\jquery-1.7.1-vsdoc.js" />
     <Content Include="Chrome\scripts\SoundCloud.js" />
-    <Content Include="Chrome\reference.js" />
     <None Include="Chrome\manifest.json" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Chrome\reference_manifest.json" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Extension.resx">

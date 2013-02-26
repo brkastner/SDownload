@@ -8,9 +8,19 @@ namespace SDownload
     {
         private readonly NotifyIcon _icon;
 
+        public String Text
+        {
+            set { _icon.Text = value; }
+        }
+
         public NotifyHandler()
         {
-            _icon = new NotifyIcon {Icon=Properties.Resources.NotifyIcon1, BalloonTipTitle="Soundcloud Downloader", Visible = true};
+            _icon = new NotifyIcon {Icon=Properties.Resources.NotifyIcon1, Text="Fetching Information...", BalloonTipTitle="Soundcloud Downloader", Visible = true};
+        }
+
+        public void UpdateText(String msg)
+        {
+            _icon.Text = msg;
         }
 
         public void Show(String msg, bool close = false)

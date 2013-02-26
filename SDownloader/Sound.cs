@@ -1,11 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
 using TagLib;
 using SFile = TagLib.File;
-using HtmlAgilityPack;
+using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
 namespace SDownload
 {
@@ -14,6 +18,8 @@ namespace SDownload
     /// </summary>
     public class Sound
     {
+        private bool songDownloaded = false;
+        private readonly Queue<KeyValuePair<Uri, String>> _downloads = new Queue<KeyValuePair<Uri, String>>();
         public String Title;
         public String Author;
         public String Genre;
@@ -87,8 +93,19 @@ namespace SDownload
         /// <returns>A Sound representation of the song</returns>
         public static Sound Download(String url)
         {
-            var request = (HttpWebRequest)WebRequest.Create(url);
-            var response = (HttpWebResponse)request.GetResponse();
+            Notify.Show("Fetching Information...");
+            HttpWebResponse response;
+            try
+            {
+                var request = (HttpWebRequest) WebRequest.Create(url);
+                response = (HttpWebResponse) request.GetResponse();
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(String.Format("Unable to make a connection to the URL: {0}\n\n{1}", url, e.ToString()));
+                Application.Exit();
+                return null;
+            }
 
             var doc = new HtmlDocument();
             doc.Load(response.GetResponseStream());
@@ -101,7 +118,12 @@ namespace SDownload
                            .GetAttributeValue("content", "");
             var album = doc.DocumentNode.SelectSingleNode(@"//meta[@property='og:image']")
                            .GetAttributeValue("content", "");
-            var genre = doc.DocumentNode.SelectSingleNode(@"//span[@class='genre']").InnerText;
+            String genre = "";
+            var genreNode = doc.DocumentNode.SelectSingleNode(@"//span[@class='genre']");
+            if (genreNode != null)
+            {
+                genre = genreNode.InnerText;
+            }
 
             var tokens = WebUtility.HtmlDecode(title).Split('-');
             if (tokens.Length > 1)
@@ -110,14 +132,60 @@ namespace SDownload
                 title = tokens[1].Trim();
             }
 
-            var wc = new WebClient();
-
             var rand = RandomString(8) + ".mp3";
-            Notify.Show(String.Format("Downloading {0} by {1}", title, author));
-            wc.DownloadFile(new Uri(links[0].Value), Directory.GetCurrentDirectory() + "\\" + rand);
-            wc.DownloadFile(new Uri(album), Directory.GetCurrentDirectory() + "\\" + rand + ".jpg");
+            var s = new Sound(rand, title, author, genre);
 
-            return new Sound(rand, title, author, genre);
+            Notify.Show(String.Format("Downloading {0} by {1}", title, author));
+            s._downloads.Enqueue(new KeyValuePair<Uri, String>(new Uri(links[0].Value), Directory.GetCurrentDirectory() + "\\" + rand));
+            s._downloads.Enqueue(new KeyValuePair<Uri, String>(new Uri(album), Directory.GetCurrentDirectory() + "\\" + rand + ".jpg"));
+
+            s.DownloadItems();
+
+            return s;
+        }
+
+        private void DownloadItems()
+        {
+            if (_downloads.Count > 0)
+            {
+                var url = _downloads.Dequeue();
+
+                var wc = new WebClient();
+                wc.DownloadFileCompleted += WcDownloadFileCompleted;
+
+                if (!songDownloaded)
+                    wc.DownloadProgressChanged += WcDownloadProgressChanged;
+
+                wc.DownloadFileAsync(url.Key, url.Value);
+            }
+            else
+            {
+                Notify.UpdateText("Moving to music folder!");
+                PackageAndDeploy();
+            }
+        }
+
+        private void WcDownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
+        {
+            Notify.UpdateText(String.Format("Progress: {0}% | {1}", e.ProgressPercentage, Title));
+        }
+
+        private void WcDownloadFileCompleted(object sender, AsyncCompletedEventArgs e)
+        {
+            if (!songDownloaded)
+            {
+                songDownloaded = true;
+                Notify.Show("Downloading song information...");
+            }
+
+            DownloadItems();
+        }
+
+        public void PackageAndDeploy()
+        {
+            Update();
+            AddToMusic();
+            Notify.Show(String.Format("{0} download completed!", Title), true);
         }
 
         /// <summary>
