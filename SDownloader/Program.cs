@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -25,7 +26,11 @@ namespace SDownload
             }
             catch (Exception e)
             {
-                MessageBox.Show(e.StackTrace);
+                var sb = new StringBuilder();
+                sb.AppendLine(e.ToString());
+                sb.AppendLine(e.Message);
+                sb.AppendLine(e.StackTrace);
+                MessageBox.Show(sb.ToString());
             }
         }
     }
