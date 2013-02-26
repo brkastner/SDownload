@@ -51,10 +51,6 @@ namespace SDownload
                 newdir += Title;
                 System.IO.File.Move(old, newdir);
             }
-            catch
-            {
-                
-            }
         }
 
         /// <summary>
