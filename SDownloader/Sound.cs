@@ -50,7 +50,7 @@ namespace SDownload
                 Directory.CreateDirectory(newdir);
                 newdir += Title;
             }
-            catch (Exception e)
+            catch
             {
                 
             }

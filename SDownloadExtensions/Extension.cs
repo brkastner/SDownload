@@ -22,18 +22,6 @@ namespace SDownloadExtensions
         {
             InitializeComponent();
 
-            RegistryKey InstalledBrowsers =
-                Registry.LocalMachine.OpenSubKey("SOFTWARE").OpenSubKey("Clients").OpenSubKey("StartMenuInternet");
-
-            if (InstalledBrowsers == null)
-                return;
-
-            if (InstalledBrowsers.OpenSubKey(ChromeKey) == null)
-            {
-                chromeInstallButton.Enabled = false;
-                chromeInstallButton.Text = "Chrome not Installed!";
-            }
-
             chromeInstallButton.Click += (sender, args) =>
                                              {
                                                  String chromeEXE = "chrome";
