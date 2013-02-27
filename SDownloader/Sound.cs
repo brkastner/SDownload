@@ -51,7 +51,7 @@ namespace SDownload
             catch (DirectoryNotFoundException e)
             {
                 // iTunes directory does not exist, move to music folder
-                newdir = String.Format("{0}\\{1}\\}", Environment.GetFolderPath(Environment.SpecialFolder.MyMusic),
+                newdir = String.Format("{0}\\{1}\\", Environment.GetFolderPath(Environment.SpecialFolder.MyMusic),
                                        Author);
                 Directory.CreateDirectory(newdir);
                 newdir += Title;
