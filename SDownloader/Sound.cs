@@ -103,7 +103,7 @@ namespace SDownload
             catch (Exception e)
             {
                 MessageBox.Show(String.Format("Unable to make a connection to the URL: {0}\n\n{1}", url, e.ToString()));
-                Application.Exit();
+                // Application.Exit();
                 return null;
             }
 
