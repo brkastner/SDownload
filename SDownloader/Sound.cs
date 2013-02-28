@@ -103,7 +103,7 @@ namespace SDownload
             catch (Exception e)
             {
                 MessageBox.Show(String.Format("Unable to make a connection to the URL: {0}\n\n{1}", url, e.ToString()));
-                // Application.Exit();
+                Application.Exit();
                 return null;
             }
 
@@ -172,13 +172,20 @@ namespace SDownload
 
         private void WcDownloadFileCompleted(object sender, AsyncCompletedEventArgs e)
         {
-            if (!songDownloaded)
+            if (e.Error == null)
             {
-                songDownloaded = true;
-                Notify.Show("Downloading song information...");
-            }
+                if (!songDownloaded)
+                {
+                    songDownloaded = true;
+                    Notify.Show("Downloading song information...");
+                }
 
-            DownloadItems();
+                DownloadItems();
+            }
+            else
+            {
+                MessageBox.Show(e.Error.ToString());
+            }
         }
 
         public void PackageAndDeploy()
