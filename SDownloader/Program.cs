@@ -16,7 +16,7 @@ namespace SDownload
             if (args.Length <= 0) return;
             try
             {
-                String link = args[0].Substring(12);
+                String link = args[0].Contains("sdownload://") ? args[0].Substring(12) : args[0];
                 Sound.Notify = new NotifyHandler();
                 Sound song = Sound.Download(link);
                 Application.Run();

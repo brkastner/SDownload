@@ -18,7 +18,7 @@ namespace SDownload
     /// </summary>
     public class Sound
     {
-        private bool songDownloaded = false;
+        private bool _songDownloaded = false;
         private readonly Queue<KeyValuePair<Uri, String>> _downloads = new Queue<KeyValuePair<Uri, String>>();
         public String Title;
         public String Author;
@@ -42,7 +42,7 @@ namespace SDownload
         /// </summary>
         public void AddToMusic()
         {
-            var old = String.Format("{0}\\{1}", Directory.GetCurrentDirectory(), _filename);
+            var old = String.Format("{0}\\{1}", Path.GetTempPath(), _filename);
             var newdir = String.Format("{0}\\iTunes\\iTunes Media\\Automatically Add to iTunes\\{1}.mp3", Environment.GetFolderPath(Environment.SpecialFolder.MyMusic), Title);
             try
             {
@@ -64,7 +64,7 @@ namespace SDownload
         /// </summary>
         public void Update()
         {
-            var song = SFile.Create(_filename);
+            var song = SFile.Create(Path.GetTempPath() + "\\" + _filename);
 
             if (song == null)
                 return;
@@ -81,7 +81,7 @@ namespace SDownload
             if (!String.IsNullOrEmpty(Genre))
                 song.Tag.Genres = new[] {Genre};
 
-            song.Tag.Pictures = new IPicture[] {new Picture(_filename + ".jpg")};
+            song.Tag.Pictures = new IPicture[] {new Picture(Path.GetTempPath() + "\\" + _filename + ".jpg")};
 
             song.Save();
         }
@@ -136,8 +136,8 @@ namespace SDownload
             var s = new Sound(rand, title, author, genre);
 
             Notify.Show(String.Format("Downloading {0} by {1}", title, author));
-            s._downloads.Enqueue(new KeyValuePair<Uri, String>(new Uri(links[0].Value), Directory.GetCurrentDirectory() + "\\" + rand));
-            s._downloads.Enqueue(new KeyValuePair<Uri, String>(new Uri(album), Directory.GetCurrentDirectory() + "\\" + rand + ".jpg"));
+            s._downloads.Enqueue(new KeyValuePair<Uri, String>(new Uri(links[0].Value), Path.GetTempPath() + "\\" + rand));
+            s._downloads.Enqueue(new KeyValuePair<Uri, String>(new Uri(album), Path.GetTempPath() + "\\" + rand + ".jpg"));
 
             s.DownloadItems();
 
@@ -153,7 +153,7 @@ namespace SDownload
                 var wc = new WebClient();
                 wc.DownloadFileCompleted += WcDownloadFileCompleted;
 
-                if (!songDownloaded)
+                if (!_songDownloaded)
                     wc.DownloadProgressChanged += WcDownloadProgressChanged;
 
                 wc.DownloadFileAsync(url.Key, url.Value);
@@ -174,9 +174,9 @@ namespace SDownload
         {
             if (e.Error == null)
             {
-                if (!songDownloaded)
+                if (!_songDownloaded)
                 {
-                    songDownloaded = true;
+                    _songDownloaded = true;
                     Notify.Show("Downloading song information...");
                 }
 
