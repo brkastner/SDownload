@@ -54,7 +54,7 @@ namespace SDownload
                 newdir = String.Format("{0}\\{1}\\", Environment.GetFolderPath(Environment.SpecialFolder.MyMusic),
                                        Author);
                 Directory.CreateDirectory(newdir);
-                newdir += Title;
+                newdir += Title + ".mp3";
                 System.IO.File.Move(old, newdir);
             }
         }
