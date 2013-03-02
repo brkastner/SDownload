@@ -1,7 +1,6 @@
 ﻿/// <reference path="jquery-1.7.1-vsdoc.js" />
 
 $(function() {
-
     function addDownloadButton() {
 
         //single player
@@ -33,7 +32,7 @@ $(function() {
         });
 
         //list
-        $(".sound.track, .soundList .sound").not(".sdownload-added").each(function() {
+        $(".sound").not(".sdownload-added").each(function() {
 
             var self = $(this);
             self.addClass("sdownload-added");
@@ -47,7 +46,7 @@ $(function() {
                 downloadButton.addClass("scDownloaderButton");
                 downloadButton.html("SDownload");
 
-                var artCoverLink = self.find(".sc-media-content>a").first();
+                var artCoverLink = self.find(".sound__coverArt").first();
                 var url = artCoverLink.attr("href");
                 url = "https://soundcloud.com" + url;
 
