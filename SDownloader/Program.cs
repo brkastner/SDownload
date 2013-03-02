@@ -28,6 +28,7 @@ namespace SDownload
                 sb.AppendLine(e.Message);
                 sb.AppendLine(e.StackTrace);
                 MessageBox.Show(sb.ToString());
+                Application.Exit();
             }
         }
     }
