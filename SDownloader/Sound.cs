@@ -40,22 +40,26 @@ namespace SDownload
         /// <summary>
         /// Add the song to iTunes
         /// </summary>
-        public void AddToMusic()
+        public void AddToTunes()
         {
-            var old = String.Format("{0}\\{1}", Path.GetTempPath(), _filename);
+            var old = String.Format("{0}{1}\\{2}.mp3", Settings.DownloadFolder, Author, Title);
             var newdir = String.Format("{0}\\iTunes\\iTunes Media\\Automatically Add to iTunes\\{1}.mp3", Environment.GetFolderPath(Environment.SpecialFolder.MyMusic), Title);
             try
             {
-                System.IO.File.Move(old, newdir);
+                switch (Settings.TunesTransfer)
+                {
+                    case Settings.TunesSetting.Move:
+                        System.IO.File.Move(old, newdir);
+                        break;
+                    case Settings.TunesSetting.Copy:
+                        System.IO.File.Copy(old, newdir);
+                        break;
+                }
             }
-            catch (DirectoryNotFoundException e)
+            catch (DirectoryNotFoundException)
             {
-                // iTunes directory does not exist, move to music folder
-                newdir = String.Format("{0}\\{1}\\", Environment.GetFolderPath(Environment.SpecialFolder.MyMusic),
-                                       Author);
-                Directory.CreateDirectory(newdir);
-                newdir += Title + ".mp3";
-                System.IO.File.Move(old, newdir);
+                // iTunes directory does not exist
+                MessageBox.Show("iTunes could not be found on your computer!");
             }
         }
 
@@ -64,7 +68,7 @@ namespace SDownload
         /// </summary>
         public void Update()
         {
-            var song = SFile.Create(Path.GetTempPath() + "\\" + _filename);
+            var song = SFile.Create(Settings.DownloadFolder + Author + "\\" +  Title + ".mp3");
 
             if (song == null)
                 return;
@@ -136,7 +140,7 @@ namespace SDownload
             var s = new Sound(rand, title, author, genre);
 
             Notify.Show(String.Format("Downloading {0} by {1}", title, author));
-            s._downloads.Enqueue(new KeyValuePair<Uri, String>(new Uri(links[0].Value), Path.GetTempPath() + "\\" + rand));
+            s._downloads.Enqueue(new KeyValuePair<Uri, String>(new Uri(links[0].Value), Settings.DownloadFolder  + author + "\\" + title + ".mp3"));
             s._downloads.Enqueue(new KeyValuePair<Uri, String>(new Uri(album), Path.GetTempPath() + "\\" + rand + ".jpg"));
 
             s.DownloadItems();
@@ -160,7 +164,7 @@ namespace SDownload
             }
             else
             {
-                Notify.UpdateText("Moving to music folder!");
+                Notify.UpdateText("Finalizing download!");
                 PackageAndDeploy();
             }
         }
@@ -191,7 +195,7 @@ namespace SDownload
         public void PackageAndDeploy()
         {
             Update();
-            AddToMusic();
+            AddToTunes();
             Notify.Show(String.Format("{0} download completed!", Title), true);
         }
 

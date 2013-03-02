@@ -22,5 +22,29 @@ namespace SDownload.Properties {
                 return defaultInstance;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("[MUSICFOLDER]")]
+        public string DownloadFolder {
+            get {
+                return ((string)(this["DownloadFolder"]));
+            }
+            set {
+                this["DownloadFolder"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        public int iTunes {
+            get {
+                return ((int)(this["iTunes"]));
+            }
+            set {
+                this["iTunes"] = value;
+            }
+        }
     }
 }

@@ -13,22 +13,28 @@ namespace SDownload
         [STAThread]
         private static void Main(String[] args)
         {
-            if (args.Length <= 0) return;
-            try
+            if (args.Length <= 0)
             {
-                String link = args[0].Contains("sdownload://") ? args[0].Substring(12) : args[0];
-                Sound.Notify = new NotifyHandler();
-                Sound song = Sound.Download(link);
-                Application.Run();
+                Application.Run(new SettingsForm());
             }
-            catch (Exception e)
+            else
             {
-                var sb = new StringBuilder();
-                sb.AppendLine(e.ToString());
-                sb.AppendLine(e.Message);
-                sb.AppendLine(e.StackTrace);
-                MessageBox.Show(sb.ToString());
-                Application.Exit();
+                try
+                {
+                    String link = args[0].Contains("sdownload://") ? args[0].Substring(12) : args[0];
+                    Sound.Notify = new NotifyHandler();
+                    Sound song = Sound.Download(link);
+                    Application.Run();
+                }
+                catch (Exception e)
+                {
+                    var sb = new StringBuilder();
+                    sb.AppendLine(e.ToString());
+                    sb.AppendLine(e.Message);
+                    sb.AppendLine(e.StackTrace);
+                    MessageBox.Show(sb.ToString());
+                    Application.Exit();
+                }
             }
         }
     }
