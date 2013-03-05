@@ -63,9 +63,9 @@ namespace SDownload.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
-        internal static System.Drawing.Icon NotifyIcon1 {
+        internal static System.Drawing.Icon sdownload {
             get {
-                object obj = ResourceManager.GetObject("NotifyIcon1", resourceCulture);
+                object obj = ResourceManager.GetObject("sdownload", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
         }

@@ -30,6 +30,7 @@ namespace SDownload
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SettingsForm));
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
             this.selectDownloadFolderBtn = new System.Windows.Forms.Button();
             this.downloadFolderBox = new System.Windows.Forms.TextBox();
@@ -106,6 +107,7 @@ namespace SDownload
             this.Controls.Add(this.label1);
             this.Controls.Add(this.downloadFolderBox);
             this.Controls.Add(this.selectDownloadFolderBtn);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "SettingsForm";
             this.Text = "SDownload Settings";
             this.ResumeLayout(false);

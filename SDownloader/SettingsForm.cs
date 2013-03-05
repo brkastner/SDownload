@@ -15,6 +15,7 @@ namespace SDownload
         public SettingsForm()
         {
             InitializeComponent();
+
             // DownloadFolder
             downloadFolderBox.Text = Settings.DownloadFolder;
             selectDownloadFolderBtn.Click += (sender, args) =>

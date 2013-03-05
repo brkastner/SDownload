@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using Newtonsoft.Json;
 using TagLib;
 using SFile = TagLib.File;
 using HtmlDocument = HtmlAgilityPack.HtmlDocument;
@@ -18,6 +21,7 @@ namespace SDownload
     /// </summary>
     public class Sound
     {
+        private const String clientid = "4515286ec9d4ace678140c3f84357b35";
         private bool _songDownloaded = false;
         private readonly Queue<KeyValuePair<Uri, String>> _downloads = new Queue<KeyValuePair<Uri, String>>();
         public String Title;
@@ -49,8 +53,16 @@ namespace SDownload
                 switch (Settings.TunesTransfer)
                 {
                     case Settings.TunesSetting.Move:
-                        System.IO.File.Move(old, newdir);
-                        break;
+                        {
+                            System.IO.File.Move(old, newdir);
+
+                            // Delete the artist folder if empty
+                            if (old.StartsWith(Settings.DownloadFolder + Author) && !Directory.EnumerateFileSystemEntries(Settings.DownloadFolder + Author).Any())
+                            {
+                                Directory.Delete(Settings.DownloadFolder + Author);
+                            }
+                            break;
+                        }
                     case Settings.TunesSetting.Copy:
                         System.IO.File.Copy(old, newdir);
                         break;
@@ -97,39 +109,31 @@ namespace SDownload
         /// <returns>A Sound representation of the song</returns>
         public static Sound Download(String url)
         {
-            Notify.Show("Fetching Information...");
-            HttpWebResponse response;
+            Notify.Show("Downloading link information...");
+            TrackData track;
             try
             {
-                var request = (HttpWebRequest) WebRequest.Create(url);
-                response = (HttpWebResponse) request.GetResponse();
+                const String resolveUrl = "http://api.soundcloud.com/resolve?url={0}&client_id={1}";
+                var request = (HttpWebRequest) WebRequest.Create(String.Format(resolveUrl, url, clientid));
+                request.Method = WebRequestMethods.Http.Get;
+                request.Accept = "application/json";
+                var response = request.GetResponse().GetResponseStream();
+                if (response == null)
+                    throw new Exception("Soundcloud API failed to respond!");
+                track = new DataContractJsonSerializer(typeof(TrackData)).ReadObject(response) as TrackData;
+                if (track == null)
+                    throw new Exception("Could not deserialize the track information!");
             }
             catch (Exception e)
             {
                 MessageBox.Show(String.Format("Unable to make a connection to the URL: {0}\n\n{1}", url, e.ToString()));
-                Application.Exit();
                 return null;
             }
 
-            var doc = new HtmlDocument();
-            doc.Load(response.GetResponseStream());
+            var tokens = WebUtility.HtmlDecode(track.Title).Split('-');
+            var author = track.User.Username;
+            var title = track.Title;
 
-            var searchString = WebUtility.HtmlDecode(doc.DocumentNode.InnerHtml);
-            var links = Regex.Matches(searchString, "((http:[/][/])(media.soundcloud.com/stream/)([a-z]|[A-Z]|[0-9]|[/.]|[~]|[?]|[_]|[=])*)");
-
-            var author = doc.DocumentNode.SelectSingleNode(@"//a[@class='user-name']").InnerText;
-            var title = doc.DocumentNode.SelectSingleNode(@"//meta[@property='og:title']")
-                           .GetAttributeValue("content", "");
-            var album = doc.DocumentNode.SelectSingleNode(@"//meta[@property='og:image']")
-                           .GetAttributeValue("content", "");
-            String genre = "";
-            var genreNode = doc.DocumentNode.SelectSingleNode(@"//span[@class='genre']");
-            if (genreNode != null)
-            {
-                genre = genreNode.InnerText;
-            }
-
-            var tokens = WebUtility.HtmlDecode(title).Split('-');
             if (tokens.Length > 1)
             {
                 author = tokens[0].Trim();
@@ -137,11 +141,13 @@ namespace SDownload
             }
 
             var rand = RandomString(8) + ".mp3";
-            var s = new Sound(rand, title, author, genre);
+            var s = new Sound(rand, title, author, track.Genre ?? "");
 
             Notify.Show(String.Format("Downloading {0} by {1}", title, author));
-            s._downloads.Enqueue(new KeyValuePair<Uri, String>(new Uri(links[0].Value), Settings.DownloadFolder  + author + "\\" + title + ".mp3"));
-            s._downloads.Enqueue(new KeyValuePair<Uri, String>(new Uri(album), Path.GetTempPath() + "\\" + rand + ".jpg"));
+            if (!Directory.Exists(Settings.DownloadFolder + author))
+                Directory.CreateDirectory(Settings.DownloadFolder + author);
+            s._downloads.Enqueue(new KeyValuePair<Uri, String>(new Uri(track.StreamUrl + "?client_id=" + clientid), Settings.DownloadFolder  + author + "\\" + title + ".mp3"));
+            s._downloads.Enqueue(new KeyValuePair<Uri, String>(new Uri(track.ArtworkUrl ?? track.User.AvatarUrl), Path.GetTempPath() + "\\" + rand + ".jpg"));
 
             s.DownloadItems();
 
@@ -189,6 +195,7 @@ namespace SDownload
             else
             {
                 MessageBox.Show(e.Error.ToString());
+                Application.Exit();
             }
         }
 
