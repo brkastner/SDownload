@@ -26,11 +26,11 @@ namespace SDownload
         public void Show(String msg, bool close = false)
         {
             _icon.BalloonTipText = msg;
-            _icon.ShowBalloonTip(500);
+            _icon.ShowBalloonTip(300);
 
             if (!close) return;
 
-            Thread.Sleep(500);
+            Thread.Sleep(300);
             Close();
         }
 

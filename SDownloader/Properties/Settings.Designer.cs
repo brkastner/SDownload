@@ -46,5 +46,17 @@ namespace SDownload.Properties {
                 this["iTunes"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool AuthorFolder {
+            get {
+                return ((bool)(this["AuthorFolder"]));
+            }
+            set {
+                this["AuthorFolder"] = value;
+            }
+        }
     }
 }

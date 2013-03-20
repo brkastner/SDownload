@@ -71,6 +71,7 @@
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Name = "ExtensionForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Extension Helper";
             this.ResumeLayout(false);
             this.PerformLayout();

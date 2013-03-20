@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿using System.Windows.Forms;
 
 namespace SDownload
 {
@@ -23,6 +15,14 @@ namespace SDownload
                                                      if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
                                                          downloadFolderBox.Text = folderBrowserDialog1.SelectedPath;
                                                  };
+            
+            // Author Folder
+            authorFolderSort.Checked = Settings.AuthorFolder;
+            authorFolderSort.CheckedChanged += (sender, args) =>
+                                                   {
+                                                       Settings.AuthorFolder = authorFolderSort.Checked;
+                                                   };
+
             // iTunes Functionality
             iTunesEnabled.Checked = Settings.TunesTransfer != Settings.TunesSetting.Nothing;
             iTunesEnabled.CheckedChanged += (sender, args) =>

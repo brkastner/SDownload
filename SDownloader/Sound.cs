@@ -46,8 +46,8 @@ namespace SDownload
         /// </summary>
         public void AddToTunes()
         {
-            var old = String.Format("{0}{1}\\{2}.mp3", Settings.DownloadFolder, Author, Title);
-            var newdir = String.Format("{0}\\iTunes\\iTunes Media\\Automatically Add to iTunes\\{1}.mp3", Environment.GetFolderPath(Environment.SpecialFolder.MyMusic), Title);
+            var old = String.Format("{0}{1}\\{2}.mp3", Settings.DownloadFolder, Settings.AuthorFolder ? Author : "", GetFileName(Title));
+            var newdir = String.Format("{0}\\iTunes\\iTunes Media\\Automatically Add to iTunes\\{1}.mp3", Environment.GetFolderPath(Environment.SpecialFolder.MyMusic), GetFileName(Title));
             try
             {
                 switch (Settings.TunesTransfer)
@@ -57,7 +57,8 @@ namespace SDownload
                             System.IO.File.Move(old, newdir);
 
                             // Delete the artist folder if empty
-                            if (old.StartsWith(Settings.DownloadFolder + Author) && !Directory.EnumerateFileSystemEntries(Settings.DownloadFolder + Author).Any())
+                            if (Settings.AuthorFolder && old.StartsWith(Settings.DownloadFolder + Author) 
+                                && !Directory.EnumerateFileSystemEntries(Settings.DownloadFolder + Author).Any())
                             {
                                 Directory.Delete(Settings.DownloadFolder + Author);
                             }
@@ -80,7 +81,7 @@ namespace SDownload
         /// </summary>
         public void Update()
         {
-            var song = SFile.Create(Settings.DownloadFolder + Author + "\\" +  Title + ".mp3");
+            var song = SFile.Create(Settings.DownloadFolder + (Settings.AuthorFolder ? Author : "") + "\\" +  GetFileName(Title) + ".mp3");
 
             if (song == null)
                 return;
@@ -144,9 +145,10 @@ namespace SDownload
             var s = new Sound(rand, title, author, track.Genre ?? "");
 
             Notify.Show(String.Format("Downloading {0} by {1}", title, author));
-            if (!Directory.Exists(Settings.DownloadFolder + author))
-                Directory.CreateDirectory(Settings.DownloadFolder + author);
-            s._downloads.Enqueue(new KeyValuePair<Uri, String>(new Uri(track.StreamUrl + "?client_id=" + clientid), Settings.DownloadFolder  + author + "\\" + title + ".mp3"));
+            String directory = Settings.DownloadFolder + (Settings.AuthorFolder ? author : "");
+            if (!Directory.Exists(directory))
+                Directory.CreateDirectory(directory);
+            s._downloads.Enqueue(new KeyValuePair<Uri, String>(new Uri(track.StreamUrl + "?client_id=" + clientid), directory + "\\" + GetFileName(title) + ".mp3"));
             s._downloads.Enqueue(new KeyValuePair<Uri, String>(new Uri(track.ArtworkUrl ?? track.User.AvatarUrl), Path.GetTempPath() + "\\" + rand + ".jpg"));
 
             s.DownloadItems();
@@ -223,6 +225,22 @@ namespace SDownload
             }
 
             return builder.ToString();
+        }
+
+        /// <summary>
+        /// Get the clean filename for a title
+        /// </summary>
+        /// <param name="value">The title of the song</param>
+        /// <returns>A cleaned filename for the given title</returns>
+        public static string GetFileName(string value)
+        {
+            StringBuilder sb = new StringBuilder(value);
+            char[] invalid = Path.GetInvalidFileNameChars();
+            foreach (char item in invalid)
+            {
+                sb.Replace(item.ToString(), "");
+            }
+            return sb.ToString();
         }
     }
 }

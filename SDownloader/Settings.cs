@@ -26,24 +26,34 @@ namespace SDownload
             }
         }
 
-        public enum TunesSetting
+        public static bool AuthorFolder
         {
-            Nothing = 0,
-            Copy = 1,
-            Move = 2
+            get { return Properties.Settings.Default.AuthorFolder; }
+            set
+            {
+                Properties.Settings.Default.AuthorFolder = value;
+                Properties.Settings.Default.Save();
+            }
         }
 
         public static TunesSetting TunesTransfer
         {
             get
             {
-                return (TunesSetting) Properties.Settings.Default.iTunes;
+                return (TunesSetting)Properties.Settings.Default.iTunes;
             }
             set
             {
-                Properties.Settings.Default.iTunes = (int) value;
+                Properties.Settings.Default.iTunes = (int)value;
                 Properties.Settings.Default.Save();
             }
+        }
+
+        public enum TunesSetting
+        {
+            Nothing = 0,
+            Copy = 1,
+            Move = 2
         }
     }
 }

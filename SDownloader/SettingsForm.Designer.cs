@@ -38,6 +38,7 @@ namespace SDownload
             this.iTunesEnabled = new System.Windows.Forms.CheckBox();
             this.iTunesCopy = new System.Windows.Forms.CheckBox();
             this.saveBtn = new System.Windows.Forms.Button();
+            this.authorFolderSort = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // selectDownloadFolderBtn
@@ -70,7 +71,7 @@ namespace SDownload
             this.iTunesEnabled.AutoSize = true;
             this.iTunesEnabled.Checked = true;
             this.iTunesEnabled.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.iTunesEnabled.Location = new System.Drawing.Point(12, 56);
+            this.iTunesEnabled.Location = new System.Drawing.Point(12, 79);
             this.iTunesEnabled.Name = "iTunesEnabled";
             this.iTunesEnabled.Size = new System.Drawing.Size(92, 17);
             this.iTunesEnabled.TabIndex = 3;
@@ -80,7 +81,7 @@ namespace SDownload
             // iTunesCopy
             // 
             this.iTunesCopy.AutoSize = true;
-            this.iTunesCopy.Location = new System.Drawing.Point(31, 80);
+            this.iTunesCopy.Location = new System.Drawing.Point(30, 102);
             this.iTunesCopy.Name = "iTunesCopy";
             this.iTunesCopy.Size = new System.Drawing.Size(173, 17);
             this.iTunesCopy.TabIndex = 4;
@@ -89,18 +90,29 @@ namespace SDownload
             // 
             // saveBtn
             // 
-            this.saveBtn.Location = new System.Drawing.Point(408, 109);
+            this.saveBtn.Location = new System.Drawing.Point(408, 136);
             this.saveBtn.Name = "saveBtn";
             this.saveBtn.Size = new System.Drawing.Size(75, 23);
             this.saveBtn.TabIndex = 5;
             this.saveBtn.Text = "Save";
             this.saveBtn.UseVisualStyleBackColor = true;
             // 
+            // authorFolderSort
+            // 
+            this.authorFolderSort.AutoSize = true;
+            this.authorFolderSort.Location = new System.Drawing.Point(12, 56);
+            this.authorFolderSort.Name = "authorFolderSort";
+            this.authorFolderSort.Size = new System.Drawing.Size(118, 17);
+            this.authorFolderSort.TabIndex = 6;
+            this.authorFolderSort.Text = "Sort Songs by Artist";
+            this.authorFolderSort.UseVisualStyleBackColor = true;
+            // 
             // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(495, 144);
+            this.ClientSize = new System.Drawing.Size(495, 171);
+            this.Controls.Add(this.authorFolderSort);
             this.Controls.Add(this.saveBtn);
             this.Controls.Add(this.iTunesCopy);
             this.Controls.Add(this.iTunesEnabled);
@@ -125,5 +137,7 @@ namespace SDownload
         private System.Windows.Forms.CheckBox iTunesCopy;
         private System.Windows.Forms.Button saveBtn;
         partial void SettingsFormLoad(object sender, EventArgs e);
+
+        private System.Windows.Forms.CheckBox authorFolderSort;
     }
 }
