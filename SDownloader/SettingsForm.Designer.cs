@@ -39,6 +39,7 @@ namespace SDownload
             this.iTunesCopy = new System.Windows.Forms.CheckBox();
             this.saveBtn = new System.Windows.Forms.Button();
             this.authorFolderSort = new System.Windows.Forms.CheckBox();
+            this.useDownloadLink = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // selectDownloadFolderBtn
@@ -107,11 +108,22 @@ namespace SDownload
             this.authorFolderSort.Text = "Sort Songs by Artist";
             this.authorFolderSort.UseVisualStyleBackColor = true;
             // 
+            // useDownloadLink
+            // 
+            this.useDownloadLink.AutoSize = true;
+            this.useDownloadLink.Location = new System.Drawing.Point(12, 125);
+            this.useDownloadLink.Name = "useDownloadLink";
+            this.useDownloadLink.Size = new System.Drawing.Size(193, 17);
+            this.useDownloadLink.TabIndex = 7;
+            this.useDownloadLink.Text = "Use Download Link When Possible";
+            this.useDownloadLink.UseVisualStyleBackColor = true;
+            // 
             // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(495, 171);
+            this.Controls.Add(this.useDownloadLink);
             this.Controls.Add(this.authorFolderSort);
             this.Controls.Add(this.saveBtn);
             this.Controls.Add(this.iTunesCopy);
@@ -139,5 +151,6 @@ namespace SDownload
         partial void SettingsFormLoad(object sender, EventArgs e);
 
         private System.Windows.Forms.CheckBox authorFolderSort;
+        private System.Windows.Forms.CheckBox useDownloadLink;
     }
 }

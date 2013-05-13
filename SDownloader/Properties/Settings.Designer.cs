@@ -58,5 +58,17 @@ namespace SDownload.Properties {
                 this["AuthorFolder"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool UseDownloadLink {
+            get {
+                return ((bool)(this["UseDownloadLink"]));
+            }
+            set {
+                this["UseDownloadLink"] = value;
+            }
+        }
     }
 }

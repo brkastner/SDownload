@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Storage = SDownload.Properties.Settings;
+
 
 namespace SDownload
 {
@@ -13,7 +15,7 @@ namespace SDownload
         {
             get 
             { 
-                var folder = Properties.Settings.Default.DownloadFolder;
+                var folder = Storage.Default.DownloadFolder;
                 folder = folder.Replace("[MUSICFOLDER]", Environment.GetFolderPath(Environment.SpecialFolder.MyMusic));
                 if (!folder.EndsWith("\\"))
                     folder += "\\";
@@ -21,18 +23,28 @@ namespace SDownload
             }
             set
             {
-                Properties.Settings.Default.DownloadFolder = value;
-                Properties.Settings.Default.Save();
+                Storage.Default.DownloadFolder = value;
+                Storage.Default.Save();
             }
         }
 
         public static bool AuthorFolder
         {
-            get { return Properties.Settings.Default.AuthorFolder; }
+            get { return Storage.Default.AuthorFolder; }
             set
             {
-                Properties.Settings.Default.AuthorFolder = value;
-                Properties.Settings.Default.Save();
+                Storage.Default.AuthorFolder = value;
+                Storage.Default.Save();
+            }
+        }
+
+        public static bool UseDownloadLink
+        {
+            get { return Storage.Default.UseDownloadLink;  }
+            set 
+            { 
+                Storage.Default.UseDownloadLink = value;
+                Storage.Default.Save();
             }
         }
 
@@ -40,12 +52,12 @@ namespace SDownload
         {
             get
             {
-                return (TunesSetting)Properties.Settings.Default.iTunes;
+                return (TunesSetting)Storage.Default.iTunes;
             }
             set
             {
-                Properties.Settings.Default.iTunes = (int)value;
-                Properties.Settings.Default.Save();
+                Storage.Default.iTunes = (int)value;
+                Storage.Default.Save();
             }
         }
 

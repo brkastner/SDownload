@@ -16,7 +16,7 @@ namespace SDownloadExtensions
 {
     public partial class ExtensionForm : Form
     {
-        private const String ChromeVersion = "0.2";
+        private const String ChromeVersion = "1.4";
         private const String ChromeKey = "Google Chrome";
         private const String ChromeUrl =
             "https://chrome.google.com/webstore/detail/sdownload/dkflmdcolphnomonabinogaegbjbnbbm";
@@ -36,7 +36,9 @@ namespace SDownloadExtensions
             var versionFolder = from extension in Directory.EnumerateDirectories(extensionPath)
                                 where
                                     (from version in Directory.EnumerateDirectories(extension)
-                                     where version.Contains(ChromeVersion)
+                                     where (from file in Directory.EnumerateFiles(version)
+                                            where file.EndsWith(ChromeVersion + ".version")
+                                            select file).Any() 
                                      select version).Any()
                                 select extension;
             if (versionFolder.Any())

@@ -32,6 +32,9 @@ namespace SDownload
             iTunesCopy.Enabled = iTunesEnabled.Checked;
             iTunesCopy.Checked = Settings.TunesTransfer == Settings.TunesSetting.Copy;
 
+            // Use Download Link
+            useDownloadLink.Checked = Settings.UseDownloadLink;
+
             // Save Settings
             saveBtn.Click += (sender, args) =>
                                  {
@@ -46,6 +49,8 @@ namespace SDownload
                                                                       ? Settings.TunesSetting.Copy
                                                                       : Settings.TunesSetting.Move;
                                      }
+
+                                     Settings.UseDownloadLink = useDownloadLink.Checked;
                                  };
         }
     }

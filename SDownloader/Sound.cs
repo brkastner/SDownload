@@ -91,7 +91,6 @@ namespace SDownload
 
             if (!String.IsNullOrEmpty(Author)) 
             {
-                song.Tag.AlbumArtists = new[] {Author};
                 song.Tag.Performers = new[] {Author};
             }
 
@@ -148,7 +147,32 @@ namespace SDownload
             String directory = Settings.DownloadFolder + (Settings.AuthorFolder ? author : "");
             if (!Directory.Exists(directory))
                 Directory.CreateDirectory(directory);
-            s._downloads.Enqueue(new KeyValuePair<Uri, String>(new Uri(track.StreamUrl + "?client_id=" + clientid), directory + "\\" + GetFileName(title) + ".mp3"));
+
+            // Use the download url if it exists, probably better quality
+            String songDownload = track.DownloadUrl != null && Settings.UseDownloadLink ? track.DownloadUrl : track.StreamUrl;
+            if (songDownload == null)
+            {
+                HttpWebResponse response;
+                try
+                {
+                    var request = (HttpWebRequest) WebRequest.Create(url);
+                    response = (HttpWebResponse) request.GetResponse();
+                }
+                catch (Exception e)
+                {
+                    MessageBox.Show(
+                        String.Format(
+                            "Song ({0} by {1}) does not allow streaming and there was an issue manually downloading the song file! ",
+                            title, author));
+                    return null;
+                }
+                var doc = new HtmlDocument();
+                doc.Load(response.GetResponseStream());
+                var searchString = WebUtility.HtmlDecode(doc.DocumentNode.InnerHtml);
+                var links = Regex.Matches(searchString, "((http:[/][/])(media.soundcloud.com/stream/)([a-z]|[A-Z]|[0-9]|[/.]|[~]|[?]|[_]|[=])*)");
+                songDownload = links[0].Value;
+            }
+            s._downloads.Enqueue(new KeyValuePair<Uri, String>(new Uri(songDownload + "?client_id=" + clientid), directory + "\\" + GetFileName(title) + ".mp3"));
             s._downloads.Enqueue(new KeyValuePair<Uri, String>(new Uri(track.ArtworkUrl ?? track.User.AvatarUrl), Path.GetTempPath() + "\\" + rand + ".jpg"));
 
             s.DownloadItems();
