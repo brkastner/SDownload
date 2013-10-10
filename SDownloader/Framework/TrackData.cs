@@ -3,12 +3,13 @@ using System.Runtime.Serialization;
 
 namespace SDownload
 {
+    #pragma warning disable
     /// <summary>
     /// Soundcloud API response
     /// http://developers.soundcloud.com/docs/api/reference#tracks
     /// </summary>
     [DataContract]
-    internal class TrackData
+    public class TrackData
     {
         [DataMember(Name = "id")]
         internal int Id;
@@ -174,4 +175,5 @@ namespace SDownload
             internal String AvatarUrl;
         }
     }
+    #pragma warning enable
 }

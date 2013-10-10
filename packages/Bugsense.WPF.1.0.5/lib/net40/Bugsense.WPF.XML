@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Bugsense.WPF</name>
+    </assembly>
+    <members>
+        <member name="T:Bugsense.WPF.BugSense">
+            <summary>
+            This class is used to hook up the AppDomain.UnhandledException handler to a Bugsense error sender that
+            immediately sends a crash report to the bugsense servers.
+            </summary>
+        </member>
+        <member name="M:Bugsense.WPF.BugSense.Init(System.String,System.String,System.String)">
+            <summary>
+            Hooks up bugsense error sender to the unhandled exception handler. This will cause crashes to be sent
+            to bugsense when they occur. This overload is used when customizing the crash report destination. For normal
+            use - Use the other Init method.
+            </summary>
+            <param name="apiKey">This is the API key for bugsense. You need to get *your own* API key from http://bugsense.com/ </param>
+            <param name="version">The version of this application to send in case of a crash. The default value is zero, in this case the version of the entry assebmly will be used. See Assembly.GetEntryAssembly()</param>
+            <param name="apiUrl">The Url to send the crashes to, only use this if you need to customize the destination</param>
+        </member>
+        <member name="M:Bugsense.WPF.BugSense.AttachHandler">
+            <summary>
+            Attaches the eventhandler from AppDomain.CurrentDomain.UnhandledException. Done Automatically by the BugSense.Init method.
+            </summary>
+        </member>
+        <member name="M:Bugsense.WPF.BugSense.DetachHandler">
+            <summary>
+            Detaches the eventhandler from AppDomain.CurrentDomain.UnhandledException. Useful if you want to send exceptions your self.
+            </summary>
+        </member>
+        <member name="M:Bugsense.WPF.BugSense.SendException(System.Exception)">
+            <summary>
+            Sends an exception to bugsense as if a crash occured. Useful for handling the UnhandledException manually.
+            </summary>
+            <param name="exception">The exception to send to BugSense</param>
+            <exception cref="T:System.InvalidOperationException">Thrown if the Bugsense.Init method is not called before this method</exception>
+        </member>
+    </members>
+</doc>

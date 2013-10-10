@@ -70,11 +70,14 @@
     <ApplicationIcon>sdownload.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Alchemy">
+      <HintPath>..\packages\Alchemy.2.2.1\lib\net40\Alchemy.dll</HintPath>
+    </Reference>
+    <Reference Include="BugSense-WF">
+      <HintPath>Resources\BugSense-WF.dll</HintPath>
+    </Reference>
     <Reference Include="HtmlAgilityPack">
       <HintPath>..\packages\HtmlAgilityPack.1.4.6\lib\Net45\HtmlAgilityPack.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.4.5.11\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="policy.2.0.taglib-sharp">
       <HintPath>..\packages\taglib.2.1.0.0\lib\policy.2.0.taglib-sharp.dll</HintPath>
@@ -100,13 +103,26 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="NotifyHandler.cs" />
+    <Compile Include="Dialogs\YesNoDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\YesNoDialog.Designer.cs">
+      <DependentUpon>YesNoDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\UpdateAvailableDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\UpdateAvailableDialog.Designer.cs">
+      <DependentUpon>UpdateAvailableDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Framework\HandledException.cs" />
+    <Compile Include="Framework\VersionResponseContract.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Settings.cs" />
+    <Compile Include="Framework\Settings.cs" />
     <Compile Include="SettingsForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -114,9 +130,17 @@
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Sound.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="Program.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Framework\TrackData.cs" />
+    <EmbeddedResource Include="Dialogs\YesNoDialog.resx">
+      <DependentUpon>YesNoDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\UpdateAvailableDialog.resx">
+      <DependentUpon>UpdateAvailableDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <SubType>Designer</SubType>
@@ -128,6 +152,12 @@
     <None Include="app.manifest">
       <SubType>Designer</SubType>
     </None>
+    <None Include="Extensions\chrome.manifest" />
+    <None Include="Extensions\Chrome\Chrome.zip" />
+    <None Include="Extensions\Chrome\manifest.json" />
+    <None Include="Extensions\Firefox\chrome.manifest" />
+    <None Include="Extensions\Firefox\Install.rdf" />
+    <None Include="Extensions\Install.rdf" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -160,6 +190,19 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\Logo500x500.bmp" />
+    <None Include="Resources\logo500x500.png" />
+    <None Include="Resources\logo_tight.png" />
+    <Content Include="Extensions\Chrome\images\icon128.png" />
+    <Content Include="Extensions\Chrome\images\icon32.png" />
+    <Content Include="Extensions\Chrome\images\icon64.png" />
+    <Content Include="Extensions\Chrome\scripts\background.js" />
+    <Content Include="Extensions\Chrome\scripts\jquery-1.7.1-vsdoc.js" />
+    <Content Include="Extensions\Chrome\scripts\jquery-1.7.1.min.js" />
+    <Content Include="Extensions\Chrome\scripts\SoundCloud.js" />
+    <Content Include="Extensions\Chrome\sdownload.txt" />
+    <Content Include="Extensions\Firefox\chrome\content\sample.xml" />
+    <None Include="Resources\logo_with_text.png" />
     <Content Include="Resources\sdownload.ico" />
     <Content Include="sdownload.ico" />
   </ItemGroup>

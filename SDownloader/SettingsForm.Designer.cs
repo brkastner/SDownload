@@ -40,11 +40,15 @@ namespace SDownload
             this.saveBtn = new System.Windows.Forms.Button();
             this.authorFolderSort = new System.Windows.Forms.CheckBox();
             this.useDownloadLink = new System.Windows.Forms.CheckBox();
+            this.confirmExitCheckBox = new System.Windows.Forms.CheckBox();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.checkForUpdates = new System.Windows.Forms.CheckBox();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // selectDownloadFolderBtn
             // 
-            this.selectDownloadFolderBtn.Location = new System.Drawing.Point(449, 27);
+            this.selectDownloadFolderBtn.Location = new System.Drawing.Point(448, 145);
             this.selectDownloadFolderBtn.Name = "selectDownloadFolderBtn";
             this.selectDownloadFolderBtn.Size = new System.Drawing.Size(34, 23);
             this.selectDownloadFolderBtn.TabIndex = 0;
@@ -53,7 +57,7 @@ namespace SDownload
             // 
             // downloadFolderBox
             // 
-            this.downloadFolderBox.Location = new System.Drawing.Point(12, 29);
+            this.downloadFolderBox.Location = new System.Drawing.Point(11, 147);
             this.downloadFolderBox.Name = "downloadFolderBox";
             this.downloadFolderBox.Size = new System.Drawing.Size(431, 20);
             this.downloadFolderBox.TabIndex = 1;
@@ -61,7 +65,7 @@ namespace SDownload
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(13, 10);
+            this.label1.Location = new System.Drawing.Point(12, 128);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(87, 13);
             this.label1.TabIndex = 2;
@@ -72,7 +76,7 @@ namespace SDownload
             this.iTunesEnabled.AutoSize = true;
             this.iTunesEnabled.Checked = true;
             this.iTunesEnabled.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.iTunesEnabled.Location = new System.Drawing.Point(12, 79);
+            this.iTunesEnabled.Location = new System.Drawing.Point(11, 197);
             this.iTunesEnabled.Name = "iTunesEnabled";
             this.iTunesEnabled.Size = new System.Drawing.Size(92, 17);
             this.iTunesEnabled.TabIndex = 3;
@@ -82,16 +86,16 @@ namespace SDownload
             // iTunesCopy
             // 
             this.iTunesCopy.AutoSize = true;
-            this.iTunesCopy.Location = new System.Drawing.Point(30, 102);
+            this.iTunesCopy.Location = new System.Drawing.Point(29, 220);
             this.iTunesCopy.Name = "iTunesCopy";
-            this.iTunesCopy.Size = new System.Drawing.Size(173, 17);
+            this.iTunesCopy.Size = new System.Drawing.Size(166, 17);
             this.iTunesCopy.TabIndex = 4;
-            this.iTunesCopy.Text = "Keep Song in Download Folder";
+            this.iTunesCopy.Text = "Keep song in download folder";
             this.iTunesCopy.UseVisualStyleBackColor = true;
             // 
             // saveBtn
             // 
-            this.saveBtn.Location = new System.Drawing.Point(408, 136);
+            this.saveBtn.Location = new System.Drawing.Point(408, 255);
             this.saveBtn.Name = "saveBtn";
             this.saveBtn.Size = new System.Drawing.Size(75, 23);
             this.saveBtn.TabIndex = 5;
@@ -101,28 +105,61 @@ namespace SDownload
             // authorFolderSort
             // 
             this.authorFolderSort.AutoSize = true;
-            this.authorFolderSort.Location = new System.Drawing.Point(12, 56);
+            this.authorFolderSort.Location = new System.Drawing.Point(11, 174);
             this.authorFolderSort.Name = "authorFolderSort";
-            this.authorFolderSort.Size = new System.Drawing.Size(118, 17);
+            this.authorFolderSort.Size = new System.Drawing.Size(116, 17);
             this.authorFolderSort.TabIndex = 6;
-            this.authorFolderSort.Text = "Sort Songs by Artist";
+            this.authorFolderSort.Text = "Sort songs by Artist";
             this.authorFolderSort.UseVisualStyleBackColor = true;
             // 
             // useDownloadLink
             // 
             this.useDownloadLink.AutoSize = true;
-            this.useDownloadLink.Location = new System.Drawing.Point(12, 125);
+            this.useDownloadLink.Location = new System.Drawing.Point(11, 243);
             this.useDownloadLink.Name = "useDownloadLink";
-            this.useDownloadLink.Size = new System.Drawing.Size(193, 17);
+            this.useDownloadLink.Size = new System.Drawing.Size(201, 17);
             this.useDownloadLink.TabIndex = 7;
-            this.useDownloadLink.Text = "Use Download Link When Possible";
+            this.useDownloadLink.Text = "Use the download link when possible";
             this.useDownloadLink.UseVisualStyleBackColor = true;
+            // 
+            // confirmExitCheckBox
+            // 
+            this.confirmExitCheckBox.AutoSize = true;
+            this.confirmExitCheckBox.Location = new System.Drawing.Point(265, 174);
+            this.confirmExitCheckBox.Name = "confirmExitCheckBox";
+            this.confirmExitCheckBox.Size = new System.Drawing.Size(181, 17);
+            this.confirmExitCheckBox.TabIndex = 8;
+            this.confirmExitCheckBox.Text = "Confirm before exiting application";
+            this.confirmExitCheckBox.UseVisualStyleBackColor = true;
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Image = global::SDownload.Properties.Resources.logo_with_text;
+            this.pictureBox1.Location = new System.Drawing.Point(15, 12);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(468, 92);
+            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBox1.TabIndex = 9;
+            this.pictureBox1.TabStop = false;
+            // 
+            // checkForUpdates
+            // 
+            this.checkForUpdates.AutoSize = true;
+            this.checkForUpdates.Location = new System.Drawing.Point(265, 197);
+            this.checkForUpdates.Name = "checkForUpdates";
+            this.checkForUpdates.Size = new System.Drawing.Size(177, 17);
+            this.checkForUpdates.TabIndex = 10;
+            this.checkForUpdates.Text = "Automatically check for updates";
+            this.checkForUpdates.UseVisualStyleBackColor = true;
             // 
             // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(495, 171);
+            this.ClientSize = new System.Drawing.Size(495, 287);
+            this.Controls.Add(this.checkForUpdates);
+            this.Controls.Add(this.pictureBox1);
+            this.Controls.Add(this.confirmExitCheckBox);
             this.Controls.Add(this.useDownloadLink);
             this.Controls.Add(this.authorFolderSort);
             this.Controls.Add(this.saveBtn);
@@ -134,6 +171,7 @@ namespace SDownload
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "SettingsForm";
             this.Text = "SDownload Settings";
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -152,5 +190,8 @@ namespace SDownload
 
         private System.Windows.Forms.CheckBox authorFolderSort;
         private System.Windows.Forms.CheckBox useDownloadLink;
+        private System.Windows.Forms.CheckBox confirmExitCheckBox;
+        private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.CheckBox checkForUpdates;
     }
 }

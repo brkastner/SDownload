@@ -1,4 +1,5 @@
 ﻿using System.Windows.Forms;
+using SDownload.Framework;
 
 namespace SDownload
 {
@@ -35,10 +36,15 @@ namespace SDownload
             // Use Download Link
             useDownloadLink.Checked = Settings.UseDownloadLink;
 
+            // Confirm Exit
+            confirmExitCheckBox.Checked = Settings.ConfirmExit;
+
+            // Check for Updates
+            checkForUpdates.Checked = Settings.CheckForUpdates;
+
             // Save Settings
             saveBtn.Click += (sender, args) =>
                                  {
-                                     // TODO: Validate?
                                      Settings.DownloadFolder = downloadFolderBox.Text;
 
                                      if (!iTunesEnabled.Checked)
@@ -51,6 +57,8 @@ namespace SDownload
                                      }
 
                                      Settings.UseDownloadLink = useDownloadLink.Checked;
+                                     Settings.ConfirmExit = confirmExitCheckBox.Checked;
+                                     Settings.CheckForUpdates = checkForUpdates.Checked;
                                  };
         }
     }

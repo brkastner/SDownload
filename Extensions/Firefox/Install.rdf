@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+
+<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:em="http://www.mozilla.org/2004/em-rdf#">
+
+  <Description about="urn:mozilla:install-manifest">
+    <em:id>firefox@sdownload.net</em:id>
+    <em:version>1.0</em:version>
+    <em:type>2</em:type>
+   
+    <!-- Target Application this extension can install into, 
+         with minimum and maximum supported versions. --> 
+    <em:targetApplication>
+      <Description>
+        <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+        <em:minVersion>1.5</em:minVersion>
+        <em:maxVersion>23.0.*</em:maxVersion>
+      </Description>
+    </em:targetApplication>
+   
+    <!-- Front End MetaData -->
+    <em:name>SDownload</em:name>
+    <em:description>The SDownload Helper extension appends a download button to every sound on SoundCloud. The SDownload program will then download the song, update the ID3 tags on the file, and automatically add it to iTunes.
+
+The actual program can be downloaded for Windows at the following url: http://sdownload.net</em:description>
+    <em:creator>Brennan Kastner</em:creator>
+    <em:homepageURL>http://www.sdownload.net/</em:homepageURL>
+  </Description>      
+</RDF>
