@@ -115,6 +115,7 @@
     <Compile Include="Dialogs\UpdateAvailableDialog.Designer.cs">
       <DependentUpon>UpdateAvailableDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Framework\GithubReleaseApi.cs" />
     <Compile Include="Framework\HandledException.cs" />
     <Compile Include="Framework\VersionResponseContract.cs" />
     <Compile Include="Properties\Resources.Designer.cs">

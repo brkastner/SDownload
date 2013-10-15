@@ -35,9 +35,9 @@ namespace SDownload.Framework
         {
             var handled = inner as HandledException;
             var criticalHandled = handled != null && handled.IsCritical;
-            // Use the extension message if it is of type HandledExtension or a message wasn't passed through
-            // Only provide the option to report if the exception is critical
-            var dialog = new YesNoDialog("ERROR:\n\n" + (handled != null ? inner.Message : (message ?? inner.Message)),
+            // Use the extension message if it is of type HandledException or a message wasn't passed through
+            // If it is a HandledException, only provide the option to report if the exception is critical
+            var dialog = new YesNoDialog("ERROR:\n" + (handled != null ? inner.Message : (message ?? inner.Message)),
                 (handled == null && log) || criticalHandled ? "Report" : "Close",
                 (handled == null && log) || criticalHandled ? "Close" : null)
             {

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using SDownload.Framework;
@@ -15,14 +17,22 @@ namespace SDownload.Dialogs
         /// Initializes the dialog
         /// </summary>
         /// <param name="fileUrl">The URL of the new version to download</param>
-        /// <param name="contract">The response received from the SDownload regarding the new version</param>
-        public UpdateAvailableDialog(String fileUrl, VersionResponseContract contract)
+        /// <param name="contracts">The response received from the SDownload regarding the new version</param>
+        public UpdateAvailableDialog(String fileUrl, List<GithubReleaseItemContract> contracts)
         {
             InitializeComponent();
 
-            // Load new version information from the contract
-            versionNumberLabel.Text = contract.NewestVersion;
-            changeLogBox.Text = contract.Changelog;
+            // Set newest version number
+            versionNumberLabel.Text = contracts[0].Name;
+
+            // Combine all changelogs since the current version
+            var sb = new StringBuilder();
+            foreach (var release in contracts)
+            {
+                sb.AppendLine(release.Name + "\n");
+                sb.AppendLine(release.Body + "\n");
+            }
+            changeLogBox.Text = sb.ToString();
 
             // Set up the buttons
             noResponseButton.Click += (sender, args) => Close();
@@ -30,10 +40,9 @@ namespace SDownload.Dialogs
                                            {
                                                Process.Start(fileUrl);
                                                Close();
+                                               Application.Exit();
                                            };
-
-            // Load the sidebar ad
-            new Thread(() => adWebBrowser.Navigate(fileUrl)).Start();
+            Show();
         }
     }
 }

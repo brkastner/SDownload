@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -12,10 +13,6 @@ using BugSense_WF;
 using SDownload.Dialogs;
 using SDownload.Framework;
 using Resources = SDownload.Properties.Resources;
-
-/* TODO: 
- * Ads
- **/
 
 namespace SDownload
 {
@@ -100,8 +97,8 @@ namespace SDownload
             _listener.Start();
 
             // Asynchronously check for updates
-            //if (Settings.CheckForUpdates)
-                //new Thread(CheckVersionAsync).Start();
+            if (Settings.CheckForUpdates)
+                CheckVersionAsync();
 
             // Check if Chrome extension installed
             var extensionPath = Path.GetTempPath() + "..\\Google\\Chrome\\User Data\\Default\\Extensions\\";
@@ -114,24 +111,22 @@ namespace SDownload
                                        select version).Any()
                                   select extension;
 
-            if (!extensionFolder.Any())
-            {
-                // Chrome extension is not installed
-                var dialog =
-                    new YesNoDialog("SDownload requires a browser extension for Chrome in order to function properly!",
-                                    "Download", "Exit")
-                        {
-                            ResponseCallback = (result) =>
-                                                   {
-                                                       if (result)
-                                                           DownloadChromeExtension(null, null);
-                                                       else
-                                                           Exit();
-                                                   }
-                        };
-                dialog.Show();
-            }
+            if (extensionFolder.Any()) return;
 
+            // Chrome extension is not installed
+            var dialog =
+                new YesNoDialog("SDownload requires a browser extension for Chrome in order to function properly!",
+                                "Download", "Exit")
+                    {
+                        ResponseCallback = (result) =>
+                                               {
+                                                   if (result)
+                                                       DownloadChromeExtension(null, null);
+                                                   else
+                                                       Exit();
+                                               }
+                    };
+            dialog.Show();
         }
 
         /// <summary>
@@ -144,40 +139,55 @@ namespace SDownload
                 // Get the version information
                 var fvi = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
 
-                // Query the remote API
-                var request =
-                    (HttpWebRequest)
-                    WebRequest.Create(String.Format(SDownloadApi + "&current={1}", "version_check", fvi.ProductVersion));
+                // Query the remote Github API for newer releases
+                var request = (HttpWebRequest)WebRequest.Create("https://api.github.com/repos/brkastner/SDownload/releases");
                 request.Method = WebRequestMethods.Http.Get;
-                request.Accept = "application/json";
+                request.Accept = "application/vnd.github.manifold-preview";
 
                 // Process response
                 var response = request.GetResponse().GetResponseStream();
                 if (response == null)
                     throw new HandledException("There was an issue checking for updates!");
-                var contract = new DataContractJsonSerializer(typeof (VersionResponseContract)).ReadObject(response) as
-                                                   VersionResponseContract;
+
+                var contract = new DataContractJsonSerializer(typeof(GithubReleaseItemContract[])).ReadObject(response) as
+                                                   GithubReleaseItemContract[];
                 if (contract == null)
                     throw new HandledException("Could not deserialize the version update information!", true);
 
-                if (contract.UpToDate) return;
+                var currentVersion = new int[3];
+                var i = 0;
+                foreach (var num in (Application.ProductVersion).Split('.'))
+                    currentVersion[i++] = Int32.Parse(num);
+
+                // Combine any new releases to get the changelog from each
+                var newerReleases = (from release in contract
+                                     let versionNumbers = (release.TagName.Remove(0, 1)).Split('.')
+                                     where (Int32.Parse(versionNumbers[0]) > currentVersion[0] || 
+                                           Int32.Parse(versionNumbers[0]) == currentVersion[0] && Int32.Parse(versionNumbers[1]) > currentVersion[1] || 
+                                           Int32.Parse(versionNumbers[0]) == currentVersion[0] && Int32.Parse(versionNumbers[1]) == currentVersion[1] && 
+                                           Int32.Parse(versionNumbers[2]) > currentVersion[2]) && !release.Draft
+                                     select release).ToList();
+
+                if (newerReleases.Count < 1) return;
 
                 // Current version is not up to date, download new version
-                var downloadRequest = (FileWebRequest)WebRequest.Create(contract.UpdateUrl);
-                downloadRequest.Method = WebRequestMethods.File.DownloadFile;
+                var downloadRequest = (HttpWebRequest)WebRequest.Create(newerReleases[0].Assets[0].Url);
+                downloadRequest.MediaType = "application/octet-stream";
+                downloadRequest.Accept = "application/vnd.github.manifold-preview";
+                downloadRequest.Method = WebRequestMethods.Http.Get;
                 var downloadResponse = downloadRequest.GetResponse().GetResponseStream();
                 if (downloadResponse == null)
                     throw new HandledException("There was an issue checking for updates!");
-                var installerBuffer = new byte[downloadResponse.Length];
+                var installerBuffer = new byte[newerReleases[0].Assets[0].Size];
                 var downloadTask = downloadResponse.ReadAsync(installerBuffer, 0, installerBuffer.Length);
                 var fileLocation = String.Format("{0}\\sdownload_version_{1}.exe", Path.GetTempPath(),
-                                                 contract.NewestVersion);
+                                                 newerReleases[0].TagName);
                 using (var installer = File.OpenWrite(fileLocation))
                 {
                     await downloadTask;
                     // Save the installer to the disk
                     installer.Write(installerBuffer, 0, installerBuffer.Length);
-                    var updateDialog = new UpdateAvailableDialog(fileLocation, contract);
+                    var updateDialog = new UpdateAvailableDialog(fileLocation, newerReleases);
                 }
             }
             catch (Exception e)
@@ -265,7 +275,7 @@ namespace SDownload
         /// <summary>
         /// Closes any open forms before closing itself
         /// </summary>
-        /// <param name="e"></param>
+        /// <param name="e">Not used</param>
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
             if (_settingsForm != null)

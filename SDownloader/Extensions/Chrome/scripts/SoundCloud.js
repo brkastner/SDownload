@@ -142,6 +142,6 @@ $(function () {
     
     ws.onerror = function () {
         // Launch the server
-        window.location = "sdownload://" + launch;
+        window.location = "sdownload://launch";
     };
 });
