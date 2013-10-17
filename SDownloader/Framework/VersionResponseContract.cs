@@ -7,6 +7,7 @@ namespace SDownload.Framework
     /// <summary>
     /// JSON Response from the SDownload servers containing information for
     /// updating to the newest information if needed
+    /// CURRENTLY UNUSED
     /// </summary>
     [DataContract]
     public class VersionResponseContract

@@ -12,7 +12,7 @@ $(function () {
             var buttonGroup = self.find(".sc-button-group").first();
 
             var downloadButton = $("<button>").addClass("sc-button").addClass("sc-button-medium").addClass("sc-button-responsive").addClass("sc-button-download");
-            downloadButton.title("SDownload");
+            downloadButton.attr("title", "SDownload");
             downloadButton.html("SDownload");
 
             var url = window.location.href.split("?")[0];
@@ -36,7 +36,7 @@ $(function () {
             var buttonGroup = self.find(".sc-button-group").first();
 
             var downloadButton = $("<button>").addClass("sc-button").addClass("sc-button-small").addClass("sc-button-responsive").addClass("sc-button-download");
-            downloadButton.title("SDownload");
+            downloadButton.attr("title", "SDownload");
             downloadButton.html("SDownload");
 
             var artCoverLink = self.find(".sound__coverArt").first();
@@ -140,8 +140,10 @@ $(function () {
         ws.close();
     };
     
-    ws.onerror = function () {
+    // Remove this while in beta, so the extension can be updated
+    // without breaking the previous version
+    /*ws.onerror = function () {
         // Launch the server
         window.location = "sdownload://launch";
-    };
+    };*/
 });

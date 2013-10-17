@@ -59,6 +59,8 @@ namespace SDownload
                                      Settings.UseDownloadLink = useDownloadLink.Checked;
                                      Settings.ConfirmExit = confirmExitCheckBox.Checked;
                                      Settings.CheckForUpdates = checkForUpdates.Checked;
+
+                                     Close();
                                  };
         }
     }

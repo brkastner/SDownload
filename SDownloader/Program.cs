@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -28,16 +27,23 @@ namespace SDownload
         [STAThread]
         private static void Main(String[] args)
         {
+            // Only start if there isn't an instance already running
+            if (IsAlreadyRunning())
+                return;
+
             // Initialize error handling
-            const string uncaughtErrorMsg = 
-                "ERROR:\n\nSDownload has encountered an unexpected bug and needs to stop what it was doing. This crash has been recorded in order to improve future versions.";
+            const string uncaughtErrorMsg =
+                "SDownload has encountered an unexpected bug and needs to stop what it was doing. This crash has been recorded in order to improve future versions.";
 
             BugSenseHandler.Instance.InitAndStartSession(ApiKey);
-            Application.ThreadException += (sender, e) => HandledException.Throw(uncaughtErrorMsg, e.Exception, false); ;
-            AppDomain.CurrentDomain.UnhandledException += (sender, e) =>HandledException.Throw(uncaughtErrorMsg, e.ExceptionObject as Exception, false); ;
+            Application.ThreadException += (sender, e) => HandledException.Throw(uncaughtErrorMsg, e.Exception, false);
+            AppDomain.CurrentDomain.UnhandledException +=
+                (sender, e) => HandledException.Throw(uncaughtErrorMsg, e.ExceptionObject as Exception, false);
 
             Application.Run(new Program(args));
         }
+
+        private static Mutex _mutex;
 
         private readonly NotifyIcon _trayIcon;
         private readonly ContextMenu _mainMenu;
@@ -47,8 +53,6 @@ namespace SDownload
         private SettingsForm _settingsForm;
 
         private const String ApiKey = "w8c7ad34";
-
-        private const String SDownloadApi = "http://www.sdownload.com/api.php?action={0}";
 
         private const String ChromeDownloadUrl =
             "https://chrome.google.com/webstore/detail/sdownload/dkflmdcolphnomonabinogaegbjbnbbm";
@@ -66,7 +70,7 @@ namespace SDownload
                 {
                     var sound = Sound.PrepareLink(link, null);
                     sound.Download();
-                } 
+                }
             }
 
             _mainMenu = new ContextMenu();
@@ -75,25 +79,25 @@ namespace SDownload
             _mainMenu.MenuItems.Add("Close", ConfirmExitApplication);
 
             _trayIcon = new NotifyIcon
-                           {
-                               Text = Resources.ApplicationName, 
-                               Icon = Resources.sdownload, 
-                               ContextMenu = _mainMenu,
-                               Visible = true
-                           };
+                            {
+                                Text = Resources.ApplicationName,
+                                Icon = Resources.sdownload,
+                                ContextMenu = _mainMenu,
+                                Visible = true
+                            };
 
             _settingsForm = new SettingsForm
-                               {
-                                   Visible = false
-                               };
+                                {
+                                    Visible = false
+                                };
 
             _listener = new WebSocketServer(7030, IPAddress.Parse("127.0.0.1"));
             _listener.OnReceive += context =>
-                                      {
-                                          var data = context.DataFrame.ToString();
-                                          var sound = Sound.PrepareLink(data, context);
-                                          sound.Download();
-                                      };
+                                       {
+                                           var data = context.DataFrame.ToString();
+                                           var sound = Sound.PrepareLink(data, context);
+                                           sound.Download();
+                                       };
             _listener.Start();
 
             // Asynchronously check for updates
@@ -118,7 +122,7 @@ namespace SDownload
                 new YesNoDialog("SDownload requires a browser extension for Chrome in order to function properly!",
                                 "Download", "Exit")
                     {
-                        ResponseCallback = (result) =>
+                        ResponseCallback = result =>
                                                {
                                                    if (result)
                                                        DownloadChromeExtension(null, null);
@@ -136,11 +140,9 @@ namespace SDownload
         {
             try
             {
-                // Get the version information
-                var fvi = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
-
                 // Query the remote Github API for newer releases
-                var request = (HttpWebRequest)WebRequest.Create("https://api.github.com/repos/brkastner/SDownload/releases");
+                var request =
+                    (HttpWebRequest) WebRequest.Create("https://api.github.com/repos/brkastner/SDownload/releases");
                 request.Method = WebRequestMethods.Http.Get;
                 request.Accept = "application/vnd.github.manifold-preview";
 
@@ -149,8 +151,9 @@ namespace SDownload
                 if (response == null)
                     throw new HandledException("There was an issue checking for updates!");
 
-                var contract = new DataContractJsonSerializer(typeof(GithubReleaseItemContract[])).ReadObject(response) as
-                                                   GithubReleaseItemContract[];
+                var contract =
+                    new DataContractJsonSerializer(typeof (GithubReleaseItemContract[])).ReadObject(response) as
+                    GithubReleaseItemContract[];
                 if (contract == null)
                     throw new HandledException("Could not deserialize the version update information!", true);
 
@@ -162,16 +165,18 @@ namespace SDownload
                 // Combine any new releases to get the changelog from each
                 var newerReleases = (from release in contract
                                      let versionNumbers = (release.TagName.Remove(0, 1)).Split('.')
-                                     where (Int32.Parse(versionNumbers[0]) > currentVersion[0] || 
-                                           Int32.Parse(versionNumbers[0]) == currentVersion[0] && Int32.Parse(versionNumbers[1]) > currentVersion[1] || 
-                                           Int32.Parse(versionNumbers[0]) == currentVersion[0] && Int32.Parse(versionNumbers[1]) == currentVersion[1] && 
-                                           Int32.Parse(versionNumbers[2]) > currentVersion[2]) && !release.Draft
+                                     where (Int32.Parse(versionNumbers[0]) > currentVersion[0] ||
+                                            Int32.Parse(versionNumbers[0]) == currentVersion[0] &&
+                                            Int32.Parse(versionNumbers[1]) > currentVersion[1] ||
+                                            Int32.Parse(versionNumbers[0]) == currentVersion[0] &&
+                                            Int32.Parse(versionNumbers[1]) == currentVersion[1] &&
+                                            Int32.Parse(versionNumbers[2]) > currentVersion[2]) && !release.Draft
                                      select release).ToList();
 
                 if (newerReleases.Count < 1) return;
 
                 // Current version is not up to date, download new version
-                var downloadRequest = (HttpWebRequest)WebRequest.Create(newerReleases[0].Assets[0].Url);
+                var downloadRequest = (HttpWebRequest) WebRequest.Create(newerReleases[0].Assets[0].Url);
                 downloadRequest.MediaType = "application/octet-stream";
                 downloadRequest.Accept = "application/vnd.github.manifold-preview";
                 downloadRequest.Method = WebRequestMethods.Http.Get;
@@ -187,7 +192,7 @@ namespace SDownload
                     await downloadTask;
                     // Save the installer to the disk
                     installer.Write(installerBuffer, 0, installerBuffer.Length);
-                    var updateDialog = new UpdateAvailableDialog(fileLocation, newerReleases);
+                    UpdateAvailableDialog.Prompt(fileLocation, newerReleases);
                 }
             }
             catch (Exception e)
@@ -238,12 +243,12 @@ namespace SDownload
                         "Are you sure you want to exit? SDownload requires this application to be running in order to download any songs!",
                         "Close", "Cancel", CheckBoxState.NotChecked)
                         {
-                            ResponseCallback = (result) =>
+                            ResponseCallback = result =>
                                                    {
                                                        if (result)
                                                            Exit();
                                                    },
-                            CheckBoxSettingCallback = (result) => Settings.ConfirmExit = !result
+                            CheckBoxSettingCallback = result => Settings.ConfirmExit = !result
                         };
                 dialog.Show();
             }
@@ -295,6 +300,29 @@ namespace SDownload
                 _trayIcon.Dispose();
 
             base.Dispose(disposing);
+        }
+
+        /// <summary>
+        /// Check if SDownload is already running
+        /// </summary>
+        /// <returns>True if the application is already running</returns>
+        private static bool IsAlreadyRunning()
+        {
+            var name = new FileInfo(Assembly.GetExecutingAssembly().Location).Name;
+
+            _mutex = new Mutex(true, "Global\\" + name);
+
+            GC.KeepAlive(_mutex);
+
+            try
+            {
+                return _mutex.WaitOne(0, false);
+            }
+            catch (AbandonedMutexException)
+            {
+                _mutex.ReleaseMutex();
+                return _mutex.WaitOne(0, false);
+            }
         }
     }
 }

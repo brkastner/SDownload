@@ -29,7 +29,7 @@ namespace SDownload.Dialogs
             var sb = new StringBuilder();
             foreach (var release in contracts)
             {
-                sb.AppendLine(release.Name + "\n");
+                sb.AppendLine(release.Name + "\n---------");
                 sb.AppendLine(release.Body + "\n");
             }
             changeLogBox.Text = sb.ToString();
@@ -42,7 +42,17 @@ namespace SDownload.Dialogs
                                                Close();
                                                Application.Exit();
                                            };
-            Show();
+        }
+
+        /// <summary>
+        /// Creates an update dialog to prompt the user
+        /// </summary>
+        /// <param name="fileUrl">The URL of the new version to download</param>
+        /// <param name="contracts">The response received from the SDownload regarding the new version</param>
+        public static void Prompt(String fileUrl, List<GithubReleaseItemContract> contracts)
+        {
+            new UpdateAvailableDialog(fileUrl, contracts).Show();
+
         }
     }
 }

@@ -51,12 +51,12 @@ namespace SDownload.Dialogs
             if (yesLabel != null)
                 yesButton.Text = yesLabel;
             else
-                yesButton.Enabled = false;
+                yesButton.Visible = false;
 
             if (noLabel != null)
                 noButton.Text = noLabel;
             else
-                noButton.Enabled = false;
+                noButton.Visible = false;
 
             // Close dialog when a response has been chosen
             yesButton.Click += (sender, args) => Close();
