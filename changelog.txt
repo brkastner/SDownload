@@ -1,0 +1,8 @@
+v2.0.4 BETA:
+
+- Allow the option to check for updates from the context menu.
+- Properly mark the application as closed so when checking for a running instance on startup, it doesn't close incorrectly.
+
+v2.0.0 BETA:
+
+- TODO: Create the version 2.0 changelog since 1.4
