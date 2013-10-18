@@ -74,6 +74,7 @@ namespace SDownload
             }
 
             _mainMenu = new ContextMenu();
+            _mainMenu.MenuItems.Add("Check for Updates", (sender, eargs) => CheckVersionAsync());
             _mainMenu.MenuItems.Add("Settings", ShowSettings);
             _mainMenu.MenuItems.Add("Download Chrome Extension", DownloadChromeExtension);
             _mainMenu.MenuItems.Add("Close", ConfirmExitApplication);
@@ -287,6 +288,7 @@ namespace SDownload
                 _settingsForm.Close();
 
             _listener.Stop();
+            _mutex.ReleaseMutex();
             base.OnClosing(e);
         }
 

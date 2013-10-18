@@ -84,5 +84,11 @@ namespace SDownload.Framework
         /// </summary>
         [DataMember(Name = "size")]
         internal int Size;
+
+        /// <summary>
+        /// The amount of times the asset has been downloaded
+        /// </summary>
+        [DataMember(Name = "download_count")]
+        internal int DownloadCount;
     }
 }
