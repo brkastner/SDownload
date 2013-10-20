@@ -27,10 +27,6 @@ namespace SDownload
         [STAThread]
         private static void Main(String[] args)
         {
-            // Only start if there isn't an instance already running
-            if (IsAlreadyRunning())
-                return;
-
             // Initialize error handling
             const string uncaughtErrorMsg =
                 "SDownload has encountered an unexpected bug and needs to stop what it was doing. This crash has been recorded in order to improve future versions.";
@@ -63,75 +59,94 @@ namespace SDownload
         /// <param name="args"></param>
         public Program(String[] args)
         {
-            if (args.Length > 0)
+            // Only start if there isn't an instance already running
+            if (IsAlreadyRunning())
             {
-                var link = args[0].Contains("sdownload://") ? args[0].Substring(12) : args[0];
-                if (!link.StartsWith("launch"))
-                {
-                    var sound = Sound.PrepareLink(link, null);
-                    sound.Download();
-                }
+                var dialog =
+                    new YesNoDialog(
+                        "Only one instance of SDownload can be running at a time!",
+                        "Close", null)
+                        {
+                            ResponseCallback = result => Exit()
+                        };
+                dialog.Show();
             }
+            else
+            {
+                if (args.Length > 0)
+                {
+                    var link = args[0].Contains("sdownload://") ? args[0].Substring(12) : args[0];
+                    if (!link.StartsWith("launch"))
+                    {
+                        var sound = Sound.PrepareLink(link, null);
+                        sound.Download();
+                    }
+                }
 
-            _mainMenu = new ContextMenu();
-            _mainMenu.MenuItems.Add("Check for Updates", (sender, eargs) => CheckVersionAsync());
-            _mainMenu.MenuItems.Add("Settings", ShowSettings);
-            _mainMenu.MenuItems.Add("Download Chrome Extension", DownloadChromeExtension);
-            _mainMenu.MenuItems.Add("Close", ConfirmExitApplication);
+                _mainMenu = new ContextMenu();
+                _mainMenu.MenuItems.Add("Check for Updates", (sender, eargs) => CheckVersionAsync());
+                _mainMenu.MenuItems.Add("Settings", ShowSettings);
+                _mainMenu.MenuItems.Add("Download Chrome Extension", DownloadChromeExtension);
+                _mainMenu.MenuItems.Add("Close", ConfirmExitApplication);
 
-            _trayIcon = new NotifyIcon
-                            {
-                                Text = Resources.ApplicationName,
-                                Icon = Resources.sdownload,
-                                ContextMenu = _mainMenu,
-                                Visible = true
-                            };
-
-            _settingsForm = new SettingsForm
+                _trayIcon = new NotifyIcon
                                 {
-                                    Visible = false
+                                    Text = Resources.ApplicationName,
+                                    Icon = Resources.sdownload,
+                                    ContextMenu = _mainMenu,
+                                    Visible = true
                                 };
 
-            _listener = new WebSocketServer(7030, IPAddress.Parse("127.0.0.1"));
-            _listener.OnReceive += context =>
-                                       {
-                                           var data = context.DataFrame.ToString();
-                                           var sound = Sound.PrepareLink(data, context);
-                                           sound.Download();
-                                       };
-            _listener.Start();
+                _settingsForm = new SettingsForm
+                                    {
+                                        Visible = false
+                                    };
 
-            // Asynchronously check for updates
-            if (Settings.CheckForUpdates)
-                CheckVersionAsync();
+                _listener = new WebSocketServer(7030, IPAddress.Parse("127.0.0.1"));
+                _listener.OnReceive += context =>
+                                           {
+                                               var data = context.DataFrame.ToString();
+                                               var sound = Sound.PrepareLink(data, context);
+                                               sound.Download();
 
-            // Check if Chrome extension installed
-            var extensionPath = Path.GetTempPath() + "..\\Google\\Chrome\\User Data\\Default\\Extensions\\";
-            var extensionFolder = from extension in Directory.EnumerateDirectories(extensionPath)
-                                  where
-                                      (from version in Directory.EnumerateDirectories(extension)
-                                       where (from file in Directory.EnumerateFiles(version)
-                                              where file.EndsWith("sdownload.txt")
-                                              select file).Any()
-                                       select version).Any()
-                                  select extension;
+                                               // Check for updates after the song has already downloaded
+                                               if (Settings.CheckForUpdates)
+                                                   CheckVersionAsync();
+                                           };
+                _listener.Start();
 
-            if (extensionFolder.Any()) return;
+                // Asynchronously check for updates
+                if (Settings.CheckForUpdates)
+                    CheckVersionAsync();
 
-            // Chrome extension is not installed
-            var dialog =
-                new YesNoDialog("SDownload requires a browser extension for Chrome in order to function properly!",
-                                "Download", "Exit")
-                    {
-                        ResponseCallback = result =>
-                                               {
-                                                   if (result)
-                                                       DownloadChromeExtension(null, null);
-                                                   else
-                                                       Exit();
-                                               }
-                    };
-            dialog.Show();
+                // Check if Chrome extension installed
+                var extensionPath = Path.GetTempPath() + "..\\Google\\Chrome\\User Data\\Default\\Extensions\\";
+                var extensionFolder = from extension in Directory.EnumerateDirectories(extensionPath)
+                                      where
+                                          (from version in Directory.EnumerateDirectories(extension)
+                                           where (from file in Directory.EnumerateFiles(version)
+                                                  where file.EndsWith("sdownload.txt")
+                                                  select file).Any()
+                                           select version).Any()
+                                      select extension;
+
+                if (extensionFolder.Any()) return;
+
+                // Chrome extension is not installed
+                var dialog =
+                    new YesNoDialog("SDownload requires a browser extension for Chrome in order to function properly!",
+                                    "Download", "Exit")
+                        {
+                            ResponseCallback = result =>
+                                                   {
+                                                       if (result)
+                                                           DownloadChromeExtension(null, null);
+                                                       else
+                                                           Exit();
+                                                   }
+                        };
+                dialog.Show();
+            }
         }
 
         /// <summary>
@@ -262,7 +277,8 @@ namespace SDownload
         /// </summary>
         private void Exit()
         {
-            _listener.Stop();
+            if (_listener != null)
+                _listener.Stop();
             Application.Exit();
         }
 

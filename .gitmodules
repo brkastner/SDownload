@@ -1,0 +1,3 @@
+[submodule "Release"]
+	path = Release
+	url = git@github.com:brkastner/SDownload.git
