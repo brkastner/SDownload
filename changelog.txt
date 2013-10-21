@@ -1,3 +1,12 @@
+v2.0.8 BETA:
+- Only show one upgrade dialog when prompted again while a previous is still open.
+
+v2.0.7 BETA:
+- Fix the report button
+
+v2.0.6 BETA:
+- Minor changes
+
 v2.0.5 BETA:
 - Check for updates after downloading a song.
 - Increase error dialog size for larger error messages.
