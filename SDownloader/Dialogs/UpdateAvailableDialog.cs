@@ -29,8 +29,8 @@ namespace SDownload.Dialogs
             var sb = new StringBuilder();
             foreach (var release in contracts)
             {
-                sb.AppendLine(release.Name + "\n---------");
-                sb.AppendLine(release.Body + "\n");
+                sb.AppendLine(release.Name + "\r\n---------");
+                sb.AppendLine(release.Body + "\r\n");
             }
             changeLogBox.Text = sb.ToString();
 

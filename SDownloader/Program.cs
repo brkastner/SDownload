@@ -152,7 +152,7 @@ namespace SDownload
         /// <summary>
         /// Checks if the current version is the newest version
         /// </summary>
-        private static async void CheckVersionAsync()
+        private static void CheckVersionAsync()
         {
             try
             {
@@ -193,21 +193,22 @@ namespace SDownload
 
                 // Current version is not up to date, download new version
                 var downloadRequest = (HttpWebRequest) WebRequest.Create(newerReleases[0].Assets[0].Url);
-                downloadRequest.MediaType = "application/octet-stream";
-                downloadRequest.Accept = "application/vnd.github.manifold-preview";
+                downloadRequest.Accept = "application/octet-stream";
                 downloadRequest.Method = WebRequestMethods.Http.Get;
                 var downloadResponse = downloadRequest.GetResponse().GetResponseStream();
                 if (downloadResponse == null)
                     throw new HandledException("There was an issue checking for updates!");
-                var installerBuffer = new byte[newerReleases[0].Assets[0].Size];
-                var downloadTask = downloadResponse.ReadAsync(installerBuffer, 0, installerBuffer.Length);
                 var fileLocation = String.Format("{0}\\sdownload_version_{1}.exe", Path.GetTempPath(),
                                                  newerReleases[0].TagName);
                 using (var installer = File.OpenWrite(fileLocation))
                 {
-                    await downloadTask;
+                    int read;
+                    var installerBuffer = new byte[4096];
+                    while ((read = downloadResponse.Read(installerBuffer, 0, installerBuffer.Length)) > 0)
+                    {
+                        installer.Write(installerBuffer, 0, read);
+                    }
                     // Save the installer to the disk
-                    installer.Write(installerBuffer, 0, installerBuffer.Length);
                     UpdateAvailableDialog.Prompt(fileLocation, newerReleases);
                 }
             }
@@ -314,7 +315,7 @@ namespace SDownload
         /// <param name="disposing"></param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
+            if (disposing && _trayIcon != null)
                 _trayIcon.Dispose();
 
             base.Dispose(disposing);
@@ -330,16 +331,14 @@ namespace SDownload
 
             _mutex = new Mutex(true, "Global\\" + name);
 
-            GC.KeepAlive(_mutex);
-
             try
             {
-                return _mutex.WaitOne(0, false);
+                return !_mutex.WaitOne(0, false);
             }
             catch (AbandonedMutexException)
             {
                 _mutex.ReleaseMutex();
-                return _mutex.WaitOne(0, false);
+                return !_mutex.WaitOne(0, false);
             }
         }
     }

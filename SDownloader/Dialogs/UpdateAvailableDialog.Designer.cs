@@ -93,6 +93,7 @@
             // changeLogBox
             // 
             this.changeLogBox.BackColor = System.Drawing.Color.White;
+            this.changeLogBox.Cursor = System.Windows.Forms.Cursors.Default;
             this.changeLogBox.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.changeLogBox.Location = new System.Drawing.Point(12, 266);
             this.changeLogBox.Multiline = true;
@@ -101,6 +102,7 @@
             this.changeLogBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.changeLogBox.Size = new System.Drawing.Size(508, 304);
             this.changeLogBox.TabIndex = 5;
+            this.changeLogBox.TabStop = false;
             // 
             // yesResponseButton
             // 
