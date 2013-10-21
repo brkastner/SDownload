@@ -39,6 +39,7 @@ namespace SDownload.Dialogs
             yesResponseButton.Click += (sender, args) =>
                                            {
                                                Process.Start(fileUrl);
+                                               Close();
                                                Application.Exit();
                                            };
         }

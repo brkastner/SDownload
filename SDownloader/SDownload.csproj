@@ -150,7 +150,6 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="Extensions\chrome.manifest" />
-    <None Include="Extensions\Chrome\Chrome.zip" />
     <None Include="Extensions\Chrome\manifest.json" />
     <None Include="Extensions\Firefox\chrome.manifest" />
     <None Include="Extensions\Firefox\Install.rdf" />
