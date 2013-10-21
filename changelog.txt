@@ -2,6 +2,7 @@ v2.0.5 BETA:
 - Check for updates after downloading a song.
 - Increase error dialog size for larger error messages.
 - Alert the user if the program didn't download due to another instance running.
+- Fix automatic updating.
 
 v2.0.4 BETA:
 
