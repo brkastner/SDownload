@@ -51,8 +51,15 @@ namespace SDownload.Dialogs
         /// <param name="contracts">The response received from the SDownload regarding the new version</param>
         public static void Prompt(String fileUrl, List<GithubReleaseItemContract> contracts)
         {
-            new UpdateAvailableDialog(fileUrl, contracts).Show();
+            if (_form == null)
+                _form = new UpdateAvailableDialog(fileUrl, contracts);
 
+            _form.Show();
         }
+
+        /// <summary>
+        /// Only keep one instance of the update dialog
+        /// </summary>
+        private static UpdateAvailableDialog _form;
     }
 }
