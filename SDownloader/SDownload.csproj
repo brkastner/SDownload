@@ -114,7 +114,6 @@
     </Compile>
     <Compile Include="Framework\GithubReleaseApi.cs" />
     <Compile Include="Framework\HandledException.cs" />
-    <Compile Include="Framework\VersionResponseContract.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

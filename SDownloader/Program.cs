@@ -198,8 +198,7 @@ namespace SDownload
                 var downloadResponse = downloadRequest.GetResponse().GetResponseStream();
                 if (downloadResponse == null)
                     throw new HandledException("There was an issue checking for updates!");
-                var fileLocation = String.Format("{0}\\sdownload_version_{1}.exe", Path.GetTempPath(),
-                                                 newerReleases[0].TagName);
+                var fileLocation = String.Format("{0}\\sdownload_update.exe", Path.GetTempPath());
                 using (var installer = File.OpenWrite(fileLocation))
                 {
                     int read;

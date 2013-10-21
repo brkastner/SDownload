@@ -89,11 +89,13 @@ $(function () {
 
             $(target).off("click");
             $(target).html("Loading");
+            $(target).addClass("sc-button-selected");
 
             if (songHref && songHref.length > 0) {
                 var server = new WebSocket("ws://localhost:7030");
                 // Connection to helper application sucessful
-                server.onopen = function() {
+                server.onopen = function () {
+                    $(target).html("Processing");
                     server.send(songHref);
                     logDownload();
                 };
@@ -108,13 +110,8 @@ $(function () {
                 // Message was received from the helper extension
                 server.onmessage = function (msg) {
                     var data = msg.data;
-                    if (data == "OUTOFDATE") {
-                        // Extension is out of date, open the page for updating the extension
-                        var updateUrl = "https://chrome.google.com/webstore/detail/sdownload/dkflmdcolphnomonabinogaegbjbnbbm";
-                        chrome.tabs.create({ url: updateUrl });
-                    } else {
-                        $(target).html(data);
-                    }
+                    $(target).html(data);
+                    $(target).attr("title", "SDownload: " + data);
                 };
             }
         }
