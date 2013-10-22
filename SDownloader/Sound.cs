@@ -191,7 +191,7 @@ namespace SDownload
         /// </summary>
         public void Download()
         {
-            var directory = Settings.DownloadFolder + (Settings.AuthorFolder ? Author : "");
+            var directory = Settings.DownloadFolder + GetFileName(Settings.AuthorFolder ? Author : "");
             if (!Directory.Exists(directory))
                 Directory.CreateDirectory(directory);
 

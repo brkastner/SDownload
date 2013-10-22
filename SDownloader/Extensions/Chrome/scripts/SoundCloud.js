@@ -136,11 +136,9 @@ $(function () {
         // Close the test connection, it isn't needed
         ws.close();
     };
-    
-    // Remove this while in beta, so the extension can be updated
-    // without breaking the previous version
-    /*ws.onerror = function () {
+
+    ws.onerror = function () {
         // Launch the server
         window.location = "sdownload://launch";
-    };*/
+    };
 });

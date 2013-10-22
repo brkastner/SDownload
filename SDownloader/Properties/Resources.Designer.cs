@@ -61,6 +61,16 @@ namespace SDownload.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+        /// </summary>
+        internal static System.Drawing.Icon ApplicationIcon {
+            get {
+                object obj = ResourceManager.GetObject("ApplicationIcon", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to SDownload.
         /// </summary>
         internal static string ApplicationName {
@@ -114,16 +124,6 @@ namespace SDownload.Properties {
             get {
                 object obj = ResourceManager.GetObject("logo500x500", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
-        /// </summary>
-        internal static System.Drawing.Icon sdownload {
-            get {
-                object obj = ResourceManager.GetObject("sdownload", resourceCulture);
-                return ((System.Drawing.Icon)(obj));
             }
         }
     }

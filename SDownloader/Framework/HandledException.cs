@@ -7,6 +7,7 @@ namespace SDownload.Framework
     /// <summary>
     /// Handles error reporting to the user
     /// </summary>
+    [Serializable]
     public class HandledException : Exception
     {
         /// <summary>
