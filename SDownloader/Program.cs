@@ -8,7 +8,7 @@ using System.Threading;
 using Alchemy;
 using System;
 using System.Windows.Forms;
-using BugSense_WF;
+using BugSense;
 using SDownload.Dialogs;
 using SDownload.Framework;
 using Resources = SDownload.Properties.Resources;
@@ -102,6 +102,10 @@ namespace SDownload
                     {
                         var sound = Sound.PrepareLink(link, null);
                         sound.Download();
+
+                        // Log the song genre to see how SDownload is used
+                        if (sound.Genre != null && !sound.Genre.Equals(String.Empty))
+                            BugSenseHandler.Instance.SendEvent(sound.Genre);
                     }
                 }
 
@@ -132,7 +136,8 @@ namespace SDownload
                                                sound.Download();
 
                                                // Log the song genre to see how SDownload is used
-                                               BugSenseHandler.Instance.SendEvent(sound.Genre);
+                                               if (sound.Genre != null && !sound.Genre.Equals(String.Empty))
+                                                    BugSenseHandler.Instance.SendEvent(sound.Genre);
 
                                                // Check for updates after the song has already downloaded
                                                if (Settings.CheckForUpdates)
@@ -372,8 +377,15 @@ namespace SDownload
                 if (_trayIcon != null)
                     _trayIcon.Dispose();
 
-                if (_mutex != null)
-                    _mutex.ReleaseMutex();
+                try
+                {
+                    if (_mutex != null)
+                        _mutex.ReleaseMutex();
+                } catch (ApplicationException e)
+                {
+                    // Do nothing since the exception is due to attempting to release
+                    // a mutex that we do not own
+                }
             }
             
             base.Dispose(disposing);

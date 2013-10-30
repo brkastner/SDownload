@@ -10,10 +10,11 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Alchemy.Classes;
 using BugSense.Core.Model;
-using BugSense_WF;
+using BugSense;
 using SDownload.Dialogs;
 using SDownload.Framework;
 using TagLib;
+using File = System.IO.File;
 using SFile = TagLib.File;
 using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 using Resources = SDownload.Properties.Resources;
@@ -36,17 +37,20 @@ namespace SDownload
 
         private UserContext _browser;
 
-        private String _filename;
+        private String _filerand;
+
+        private String _absolutePath;
 
         /// <summary>
         /// Add the song to iTunes
         /// </summary>
         public void AddToTunes()
         {
-            var old = String.Format("{0}{1}\\{2}.mp3", Settings.DownloadFolder, Settings.AuthorFolder ? Author : "", GetFileName(Title));
-            var newdir = String.Format("{0}\\iTunes\\iTunes Media\\Automatically Add to iTunes\\{1}.mp3", Settings.CustomITunesLocation ?? Environment.GetFolderPath(Environment.SpecialFolder.MyMusic), GetFileName(Title));
-            if (System.IO.File.Exists(newdir)) 
-                System.IO.File.Delete(newdir);
+            var newdir = String.Format("{0}\\iTunes\\iTunes Media\\Automatically Add to iTunes\\{1}.{2}", 
+                Settings.CustomITunesLocation ?? Environment.GetFolderPath(Environment.SpecialFolder.MyMusic), GetFileName(Title), 
+                _absolutePath.Substring(_absolutePath.Length-3));
+            if (File.Exists(newdir)) 
+                File.Delete(newdir);
             try
             {
                 switch (Settings.TunesTransfer)
@@ -54,10 +58,10 @@ namespace SDownload
                     case Settings.TunesSetting.Move:
                         {
                             BugSenseHandler.Instance.LeaveBreadCrumb("Moving song to iTunes");
-                            System.IO.File.Move(old, newdir);
+                            File.Move(_absolutePath, newdir);
 
                             // Delete the artist folder if empty
-                            if (Settings.AuthorFolder && old.StartsWith(Settings.DownloadFolder + Author) 
+                            if (Settings.AuthorFolder && _absolutePath.StartsWith(Settings.DownloadFolder + Author) 
                                 && !Directory.EnumerateFileSystemEntries(Settings.DownloadFolder + Author).Any())
                             {
                                 Directory.Delete(Settings.DownloadFolder + Author);
@@ -66,7 +70,7 @@ namespace SDownload
                         }
                     case Settings.TunesSetting.Copy:
                         BugSenseHandler.Instance.LeaveBreadCrumb("Copying song to iTunes");
-                        System.IO.File.Copy(old, newdir);
+                        File.Copy(_absolutePath, newdir);
                         break;
                 }
             }
@@ -75,7 +79,7 @@ namespace SDownload
                 // Find iTunes location if it exists
                 var dialog = new YesNoDialog(Resources.ErrorCantFindITunes, "Locate", "Disable")
                                  {
-                                     ResponseCallback = (result) =>
+                                     ResponseCallback = result =>
                                                             {
                                                                 if (result)
                                                                 {
@@ -100,7 +104,7 @@ namespace SDownload
                                                                 }
                                                             }
                                  };
-                MessageBox.Show(Resources.ErrorCantFindITunes);
+                dialog.Show();
             }
         }
 
@@ -109,7 +113,7 @@ namespace SDownload
         /// </summary>
         public void Update()
         {
-            var song = SFile.Create(Settings.DownloadFolder + (Settings.AuthorFolder ? Author : "") + "\\" +  GetFileName(Title) + ".mp3");
+            var song = SFile.Create(_absolutePath);
 
             if (song == null)
                 return;
@@ -117,15 +121,17 @@ namespace SDownload
             if (!String.IsNullOrEmpty(Title))
                 song.Tag.Title = Title;
 
-            if (!String.IsNullOrEmpty(Author)) 
+            if (!String.IsNullOrEmpty(Author))
             {
-                song.Tag.Performers = new[] {Author};
+                var authorTag = new[] {Author};
+                song.Tag.Performers = authorTag;
+                song.Tag.AlbumArtists = authorTag;
             }
 
             if (!String.IsNullOrEmpty(Genre))
                 song.Tag.Genres = new[] {Genre};
 
-            song.Tag.Pictures = new IPicture[] {new Picture(Path.GetTempPath() + "\\" + _filename + ".jpg")};
+            song.Tag.Pictures = new IPicture[] {new Picture(Path.GetTempPath() + "\\" + _filerand + ".jpg")};
 
             song.Save();
         }
@@ -177,12 +183,12 @@ namespace SDownload
             return new Sound
                        {
                            _trackData = track,
-                           _filename = rand,
+                           _filerand = rand,
                            Title = title,
                            Author = author,
                            Genre = track.Genre ?? "",
                            _url = url,
-                           _browser = browser
+                           _browser = browser,
                        };
         }
 
@@ -224,12 +230,13 @@ namespace SDownload
             songDownloader.DownloadFileCompleted += FileDownloadCompleted;
             songDownloader.DownloadProgressChanged += (sender, e) =>
                                                           { if (_browser != null) _browser.Send(String.Format("{0}%", e.ProgressPercentage)); };
-            songDownloader.DownloadFileAsync(new Uri(songDownload + "?client_id=" + Clientid), directory + "\\" + GetFileName(Title) + ".mp3");
+            _absolutePath = directory + "\\" + GetFileName(Title) + ".mp3";
+            songDownloader.DownloadFileAsync(new Uri(songDownload + "?client_id=" + Clientid), _absolutePath);
 
             // Download the album art silently in the background
             var artDownloader = new WebClient();
             artDownloader.DownloadFileCompleted += FileDownloadCompleted;
-            artDownloader.DownloadFileAsync(new Uri(_trackData.ArtworkUrl ?? _trackData.User.AvatarUrl), Path.GetTempPath() + "\\" + _filename + ".jpg");
+            artDownloader.DownloadFileAsync(new Uri(_trackData.ArtworkUrl ?? _trackData.User.AvatarUrl), Path.GetTempPath() + "\\" + _filerand + ".jpg");
         }
 
         /// <summary>
@@ -247,8 +254,23 @@ namespace SDownload
 
             if (_downloadedCount != TotalToDownload) return;
 
-            if (_browser != null) _browser.Send("Finalizing");
-            Update();
+            if (_browser != null) _browser.Send("Validating");
+            try
+            {
+                Update();
+            } 
+            catch (CorruptFileException)
+            {
+                // Provided download link is not supported by iTunes, so manually
+                // download the stream
+                if (_browser != null) _browser.Send("Invalid Format, Retrying");
+                _downloadedCount--;
+                var songDownloader = new WebClient();
+                songDownloader.DownloadFileCompleted += FileDownloadCompleted;
+                songDownloader.DownloadProgressChanged += (s, e2) => { if (_browser != null) _browser.Send(String.Format("{0}%", e2.ProgressPercentage)); };
+                songDownloader.DownloadFileAsync(new Uri(_trackData.StreamUrl + "?client_id=" + Clientid), _absolutePath);
+                return;
+            }
             AddToTunes();
             if (_browser != null) _browser.Send("Done!");
             BugSenseHandler.Instance.ClearCrashExtraData();

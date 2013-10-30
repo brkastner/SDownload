@@ -139,6 +139,25 @@ $(function () {
 
     ws.onerror = function () {
         // Launch the server
-        window.location = "sdownload://launch";
+        chrome.tabs.create({ url: "sdownload://launch" });
+        
+        // Wait 20 seconds then try again, if still failed
+        // confirm that the user has the application installed
+        // and up to date
+        window.setTimeout(function() {
+            var confirm = new WebSocket("ws://localhost:7030");
+            // User does not have it installed or isn't v2+
+            confirm.onerror = function() {
+                var box = confirm("SDownload is having trouble confirming you have the full application installed and up to date. " +
+                    "Click okay to navigate to Sourceforge in order to download SDownload.");
+                if (box == true)
+                    chrome.tabs.create({ url: "http://sourceforge.net/projects/sdownload" });
+            };
+            
+            // User has it installed
+            confirm.onopen = function() {
+                confirm.close();
+            };
+        }, 20000);
     };
 });

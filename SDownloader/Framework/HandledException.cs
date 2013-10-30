@@ -1,5 +1,5 @@
 ﻿using System;
-using BugSense_WF;
+using BugSense;
 using SDownload.Dialogs;
 
 namespace SDownload.Framework
