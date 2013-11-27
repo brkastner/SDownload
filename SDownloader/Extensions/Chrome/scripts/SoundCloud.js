@@ -137,9 +137,10 @@ $(function () {
         ws.close();
     };
 
+    /*
     ws.onerror = function () {
         // Launch the server
-        chrome.tabs.create({ url: "sdownload://launch" });
+        window.open("sdownload://launch");
         
         // Wait 20 seconds then try again, if still failed
         // confirm that the user has the application installed
@@ -160,4 +161,5 @@ $(function () {
             };
         }, 20000);
     };
+    */
 });

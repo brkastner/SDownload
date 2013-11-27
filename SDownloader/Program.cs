@@ -216,7 +216,8 @@ namespace SDownload
                 var request =
                     (HttpWebRequest) WebRequest.Create("https://api.github.com/repos/brkastner/SDownload/releases");
                 request.Method = WebRequestMethods.Http.Get;
-                request.Accept = "application/vnd.github.manifold-preview";
+                request.Accept = "application/vnd.github.v3+json";
+                request.UserAgent = "SDownload";
 
                 // Process response
                 var response = request.GetResponse().GetResponseStream();
@@ -267,7 +268,7 @@ namespace SDownload
                     UpdateAvailableDialog.Prompt(fileLocation, newerReleases);
                 }
             }
-            catch (Exception e)
+            catch (WebException e)
             {
                 HandledException.Throw("Unable to make a connection to the SDownload API to check for updates!", e);
             }

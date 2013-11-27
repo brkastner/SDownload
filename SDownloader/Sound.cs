@@ -7,6 +7,7 @@ using System.Net;
 using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Alchemy.Classes;
 using BugSense.Core.Model;
@@ -32,14 +33,14 @@ namespace SDownload
         public String Genre;
         private TrackData _trackData;
         private String _url;
-        private int _downloadedCount;
-        private const int TotalToDownload = 2;
 
         private UserContext _browser;
 
         private String _filerand;
 
         private String _absolutePath;
+
+        private Task _artworkDownloadTask;
 
         /// <summary>
         /// Add the song to iTunes
@@ -195,7 +196,7 @@ namespace SDownload
         /// <summary>
         /// Downloads the Sound representation
         /// </summary>
-        public void Download()
+        public void Download(bool forceManual = false)
         {
             var directory = Settings.DownloadFolder + GetFileName(Settings.AuthorFolder ? Author : "");
             if (!Directory.Exists(directory))
@@ -203,7 +204,7 @@ namespace SDownload
 
             // Use the download url if it exists, probably better quality
             var songDownload = (_trackData.DownloadUrl != null && Settings.UseDownloadLink) ? _trackData.DownloadUrl : _trackData.StreamUrl;
-            if (songDownload == null)
+            if (songDownload == null || forceManual)
             {
                 // There was no stream URL or download URL for the song, manually parse the resource stream link from the original URL
                 BugSenseHandler.Instance.LeaveBreadCrumb("Manually downloading sound");
@@ -227,16 +228,23 @@ namespace SDownload
 
             // Download the song and report progress to the browser
             var songDownloader = new WebClient();
-            songDownloader.DownloadFileCompleted += FileDownloadCompleted;
+            songDownloader.DownloadFileCompleted += SongFileDownloadCompleted;
             songDownloader.DownloadProgressChanged += (sender, e) =>
                                                           { if (_browser != null) _browser.Send(String.Format("{0}%", e.ProgressPercentage)); };
             _absolutePath = directory + "\\" + GetFileName(Title) + ".mp3";
-            songDownloader.DownloadFileAsync(new Uri(songDownload + "?client_id=" + Clientid), _absolutePath);
+            String songUrl = songDownload + "?client_id=" + Clientid;
 
-            // Download the album art silently in the background
-            var artDownloader = new WebClient();
-            artDownloader.DownloadFileCompleted += FileDownloadCompleted;
-            artDownloader.DownloadFileAsync(new Uri(_trackData.ArtworkUrl ?? _trackData.User.AvatarUrl), Path.GetTempPath() + "\\" + _filerand + ".jpg");
+            // Download the album art silently in the background, if it hasn't been done already
+            if (_artworkDownloadTask == null)
+            {
+                var artDownloader = new WebClient();
+                String artworkUrl = _trackData.ArtworkUrl ?? _trackData.User.AvatarUrl;
+                _artworkDownloadTask = artDownloader.DownloadFileTaskAsync(new Uri(artworkUrl),
+                                                                           Path.GetTempPath() + "\\" + _filerand +
+                                                                           ".jpg");
+            }
+
+            songDownloader.DownloadFileAsync(new Uri(songUrl), _absolutePath);
         }
 
         /// <summary>
@@ -245,14 +253,21 @@ namespace SDownload
         /// </summary>
         /// <param name="sender">Not used</param>
         /// <param name="e">Download Information</param>
-        private void FileDownloadCompleted(object sender, AsyncCompletedEventArgs e)
+        private async void SongFileDownloadCompleted(object sender, AsyncCompletedEventArgs e)
         {
-            if (e.Error == null)
-                _downloadedCount++;
-            else
+            if (e.Error != null)
+            {
+                // Soundcloud api has an issue with StreamUrl, need to download the song w/o API
+                if (e.Error.Message.Contains("Not Found"))
+                {
+                    if (_browser != null) _browser.Send("Streaming disabled by Artist :C");
+                    return;
+                }
                 throw new HandledException(e.Error.ToString(), true);
+            }
 
-            if (_downloadedCount != TotalToDownload) return;
+            // Wait for the artwork to finish downloading
+            await _artworkDownloadTask;
 
             if (_browser != null) _browser.Send("Validating");
             try
@@ -264,9 +279,8 @@ namespace SDownload
                 // Provided download link is not supported by iTunes, so manually
                 // download the stream
                 if (_browser != null) _browser.Send("Invalid Format, Retrying");
-                _downloadedCount--;
                 var songDownloader = new WebClient();
-                songDownloader.DownloadFileCompleted += FileDownloadCompleted;
+                songDownloader.DownloadFileCompleted += SongFileDownloadCompleted;
                 songDownloader.DownloadProgressChanged += (s, e2) => { if (_browser != null) _browser.Send(String.Format("{0}%", e2.ProgressPercentage)); };
                 songDownloader.DownloadFileAsync(new Uri(_trackData.StreamUrl + "?client_id=" + Clientid), _absolutePath);
                 return;
