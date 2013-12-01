@@ -9,6 +9,7 @@ using Alchemy;
 using System;
 using System.Windows.Forms;
 using BugSense;
+using BugSense.Model;
 using SDownload.Dialogs;
 using SDownload.Framework;
 using Resources = SDownload.Properties.Resources;
@@ -66,11 +67,12 @@ namespace SDownload
             // Initialize error handling
             const string uncaughtErrorMsg =
                 "SDownload has encountered an unexpected bug and needs to stop what it was doing. This crash has been recorded in order to improve future versions.";
-
-            BugSenseHandler.Instance.InitAndStartSession(BugSenseApiKey);
-            Application.ThreadException += (sender, e) => HandledException.Throw(uncaughtErrorMsg, e.Exception, false);
-            AppDomain.CurrentDomain.UnhandledException +=
+            var exceptionManager = new ExceptionManager();
+            Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
+            exceptionManager.ThreadException += (sender, e) => HandledException.Throw(uncaughtErrorMsg, e.Exception, false);
+            exceptionManager.UnhandledException +=
                 (sender, e) => HandledException.Throw(uncaughtErrorMsg, e.ExceptionObject as Exception, false);
+            BugSenseHandler.Instance.InitAndStartSession(exceptionManager, BugSenseApiKey);
 
             Application.Run(new Program(args));
         }
@@ -109,7 +111,11 @@ namespace SDownload
                     }
                 }
 
+                const String donateUrl =
+                    "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=HCGUGKSBR7XMS";
+
                 _mainMenu = new ContextMenu();
+                _mainMenu.MenuItems.Add("Donate", (sender, eargs) => Process.Start(donateUrl));
                 _mainMenu.MenuItems.Add("Check for Updates", (sender, eargs) => CheckVersionAsync());
                 _mainMenu.MenuItems.Add("Settings", ShowSettings);
                 _mainMenu.MenuItems.Add("Download Chrome Extension", DownloadChromeExtension);
@@ -335,7 +341,10 @@ namespace SDownload
         private void Exit()
         {
             if (_listener != null)
+            {
                 _listener.Stop();
+            }
+
             Application.Exit();
         }
 
