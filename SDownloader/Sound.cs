@@ -217,6 +217,7 @@ namespace SDownload
                 catch (Exception e)
                 {
                     HandledException.Throw("Song does not allow streaming and there was an issue manually downloading the song file!", e, false);
+                    if (_browser != null) _browser.Send("CLOSE");
                     return;
                 }
                 var doc = new HtmlDocument();
@@ -260,7 +261,11 @@ namespace SDownload
                 // Soundcloud api has an issue with StreamUrl, need to download the song w/o API
                 if (e.Error.Message.Contains("Not Found"))
                 {
-                    if (_browser != null) _browser.Send("Streaming disabled by Artist :C");
+                    if (_browser != null)
+                    {
+                        _browser.Send("Streaming disabled by Artist :C");
+                        _browser.Send("CLOSE");
+                    }
                     return;
                 }
                 throw new HandledException(e.Error.ToString(), true);
@@ -286,7 +291,11 @@ namespace SDownload
                 return;
             }
             AddToTunes();
-            if (_browser != null) _browser.Send("Done!");
+            if (_browser != null)
+            {
+                _browser.Send("Done!");
+                _browser.Send("CLOSE");
+            }
             BugSenseHandler.Instance.ClearCrashExtraData();
             BugSenseHandler.Instance.ClearBreadCrumbs();
         }
