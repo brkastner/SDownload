@@ -112,6 +112,9 @@ $(function () {
                     var data = msg.data;
                     $(target).html(data);
                     $(target).attr("title", "SDownload: " + data);
+                    if (data == "Done!") {
+                        server.close();
+                    }
                 };
             }
         }
