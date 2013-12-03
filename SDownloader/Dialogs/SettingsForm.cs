@@ -1,7 +1,7 @@
 ﻿using System.Windows.Forms;
 using SDownload.Framework;
 
-namespace SDownload
+namespace SDownload.Dialogs
 {
     public partial class SettingsForm : Form
     {

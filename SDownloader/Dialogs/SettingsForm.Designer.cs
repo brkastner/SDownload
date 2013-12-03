@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SDownload
+namespace SDownload.Dialogs
 {
     partial class SettingsForm
     {
