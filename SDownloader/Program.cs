@@ -84,7 +84,7 @@ namespace SDownload
         public Program(String[] args)
         {
             // Only start if there isn't an instance already running
-            if (IsAlreadyRunning())
+            if (IsAlreadyRunning() && !Settings.FirstRun)
             {
                 var dialog =
                     new YesNoDialog(
@@ -97,6 +97,9 @@ namespace SDownload
             }
             else
             {
+                if (Settings.FirstRun)
+                    Settings.FirstRun = false;
+
                 if (args.Length > 0)
                 {
                     var link = args[0].Contains("sdownload://") ? args[0].Substring(12) : args[0];

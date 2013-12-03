@@ -6,6 +6,16 @@ namespace SDownload.Framework
 {
     public static class Settings
     {
+        public static bool FirstRun
+        {
+            get { return Storage.Default.FirstRun; }
+            set 
+            { 
+                Storage.Default.FirstRun = value;
+                Storage.Default.Save();
+            }
+        }
+
         public static String DownloadFolder
         {
             get 
