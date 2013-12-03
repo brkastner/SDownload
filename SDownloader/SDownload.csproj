@@ -116,6 +116,8 @@
     </Compile>
     <Compile Include="Framework\GithubReleaseApi.cs" />
     <Compile Include="Framework\HandledException.cs" />
+    <Compile Include="Framework\Information Proxies\InfoReportProxy.cs" />
+    <Compile Include="WSReportProxy.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

@@ -31,7 +31,7 @@ namespace SDownload.Framework
         /// </summary>
         /// <param name="message">Message to show to the user</param>
         /// <param name="inner">The exception that was thrown/raised</param>
-        /// <param name="log">If the crash should be reported to Bugsense</param>
+        /// <param name="log">If the crash should be allowed to be reported to Bugsense</param>
         public static void Throw(String message, Exception inner, bool log = true)
         {
             var handled = inner as HandledException;

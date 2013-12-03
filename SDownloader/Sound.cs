@@ -9,7 +9,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Alchemy.Classes;
 using BugSense.Core.Model;
 using BugSense;
 using SDownload.Dialogs;
@@ -34,9 +33,9 @@ namespace SDownload
         private TrackData _trackData;
         private String _url;
 
-        private UserContext _browser;
+        private InfoReportProxy view;
 
-        private String _filerand;
+        private String _tempFile;
 
         private String _absolutePath;
 
@@ -45,10 +44,10 @@ namespace SDownload
         /// <summary>
         /// Add the song to iTunes
         /// </summary>
-        public void AddToTunes()
+        public void AddToiTunes()
         {
             var newdir = String.Format("{0}\\iTunes\\iTunes Media\\Automatically Add to iTunes\\{1}.{2}", 
-                Settings.CustomITunesLocation ?? Environment.GetFolderPath(Environment.SpecialFolder.MyMusic), GetFileName(Title), 
+                Settings.CustomITunesLocation ?? Environment.GetFolderPath(Environment.SpecialFolder.MyMusic), GetCleanFileName(Title), 
                 _absolutePath.Substring(_absolutePath.Length-3));
             if (File.Exists(newdir)) 
                 File.Delete(newdir);
@@ -112,16 +111,18 @@ namespace SDownload
         /// <summary>
         /// Update the ID3 tags
         /// </summary>
-        public void Update()
+        public void UpdateId3Tags()
         {
             var song = SFile.Create(_absolutePath);
 
             if (song == null)
                 return;
 
+            // Title
             if (!String.IsNullOrEmpty(Title))
                 song.Tag.Title = Title;
 
+            // Artist (Performer and Album Artist)
             if (!String.IsNullOrEmpty(Author))
             {
                 var authorTag = new[] {Author};
@@ -129,10 +130,12 @@ namespace SDownload
                 song.Tag.AlbumArtists = authorTag;
             }
 
+            // Genre
             if (!String.IsNullOrEmpty(Genre))
                 song.Tag.Genres = new[] {Genre};
 
-            song.Tag.Pictures = new IPicture[] {new Picture(Path.GetTempPath() + "\\" + _filerand + ".jpg")};
+            // Album Art
+            song.Tag.Pictures = new IPicture[] {new Picture(_tempFile + ".jpg")};
 
             song.Save();
         }
@@ -141,9 +144,9 @@ namespace SDownload
         /// Gather all the necessary information for downloading the actual remote resource
         /// </summary>
         /// <param name="url">The URL to the individual song</param>
-        /// <param name="browser">The connection associated with the browser extension</param>
+        /// <param name="proxy">The connection associated with the browser extension</param>
         /// <returns>A Sound representation of the remote resource</returns>
-        public static Sound PrepareLink(String url, UserContext browser)
+        public static Sound Parse(String url, InfoReportProxy proxy)
         {
             BugSenseHandler.Instance.AddCrashExtraData(new CrashExtraData { Key = "song_url", Value = url });
             TrackData track;
@@ -178,18 +181,18 @@ namespace SDownload
                 title = tokens[1].Trim();
             }
 
-            var rand = RandomString(8) + ".mp3";
+            var rand = GenerateRandomString(8) + ".mp3";
 
             // Create and return the sound representation
             return new Sound
                        {
                            _trackData = track,
-                           _filerand = rand,
+                           _tempFile = Path.GetTempPath() + "\\" + rand,
                            Title = title,
                            Author = author,
                            Genre = track.Genre ?? "",
                            _url = url,
-                           _browser = browser,
+                           view = proxy,
                        };
         }
 
@@ -198,7 +201,7 @@ namespace SDownload
         /// </summary>
         public void Download(bool forceManual = false)
         {
-            var directory = Settings.DownloadFolder + GetFileName(Settings.AuthorFolder ? Author : "");
+            var directory = Settings.DownloadFolder + GetCleanFileName(Settings.AuthorFolder ? Author : "");
             if (!Directory.Exists(directory))
                 Directory.CreateDirectory(directory);
 
@@ -217,7 +220,7 @@ namespace SDownload
                 catch (Exception e)
                 {
                     HandledException.Throw("Song does not allow streaming and there was an issue manually downloading the song file!", e, false);
-                    if (_browser != null) _browser.Send("CLOSE");
+                    view.Close();
                     return;
                 }
                 var doc = new HtmlDocument();
@@ -230,9 +233,8 @@ namespace SDownload
             // Download the song and report progress to the browser
             var songDownloader = new WebClient();
             songDownloader.DownloadFileCompleted += SongFileDownloadCompleted;
-            songDownloader.DownloadProgressChanged += (sender, e) =>
-                                                          { if (_browser != null) _browser.Send(String.Format("{0}%", e.ProgressPercentage)); };
-            _absolutePath = directory + "\\" + GetFileName(Title) + ".mp3";
+            songDownloader.DownloadProgressChanged += (sender, e) => view.Report(String.Format("{0}%", e.ProgressPercentage));
+            _absolutePath = directory + "\\" + GetCleanFileName(Title) + ".mp3";
             String songUrl = songDownload + "?client_id=" + Clientid;
 
             // Download the album art silently in the background, if it hasn't been done already
@@ -240,9 +242,7 @@ namespace SDownload
             {
                 var artDownloader = new WebClient();
                 String artworkUrl = _trackData.ArtworkUrl ?? _trackData.User.AvatarUrl;
-                _artworkDownloadTask = artDownloader.DownloadFileTaskAsync(new Uri(artworkUrl),
-                                                                           Path.GetTempPath() + "\\" + _filerand +
-                                                                           ".jpg");
+                _artworkDownloadTask = artDownloader.DownloadFileTaskAsync(new Uri(artworkUrl), _tempFile + ".jpg");
             }
 
             songDownloader.DownloadFileAsync(new Uri(songUrl), _absolutePath);
@@ -261,11 +261,7 @@ namespace SDownload
                 // Soundcloud api has an issue with StreamUrl, need to download the song w/o API
                 if (e.Error.Message.Contains("Not Found"))
                 {
-                    if (_browser != null)
-                    {
-                        _browser.Send("Streaming disabled by Artist :C");
-                        _browser.Send("CLOSE");
-                    }
+                    view.Report("Streaming disabled by Artist :C", true);
                     return;
                 }
                 throw new HandledException(e.Error.ToString(), true);
@@ -274,28 +270,26 @@ namespace SDownload
             // Wait for the artwork to finish downloading
             await _artworkDownloadTask;
 
-            if (_browser != null) _browser.Send("Validating");
+            view.Report("Validating");
             try
             {
-                Update();
+                UpdateId3Tags();
             } 
             catch (CorruptFileException)
             {
-                // Provided download link is not supported by iTunes, so manually
-                // download the stream
-                if (_browser != null) _browser.Send("Invalid Format, Retrying");
+                // Provided download link was not mp3, manually download file
+                view.Report("Invalid Format, Retrying");
                 var songDownloader = new WebClient();
                 songDownloader.DownloadFileCompleted += SongFileDownloadCompleted;
-                songDownloader.DownloadProgressChanged += (s, e2) => { if (_browser != null) _browser.Send(String.Format("{0}%", e2.ProgressPercentage)); };
+                songDownloader.DownloadProgressChanged += (s, e2) => view.Report(String.Format("{0}%", e2.ProgressPercentage));
                 songDownloader.DownloadFileAsync(new Uri(_trackData.StreamUrl + "?client_id=" + Clientid), _absolutePath);
                 return;
             }
-            AddToTunes();
-            if (_browser != null)
-            {
-                _browser.Send("Done!");
-                _browser.Send("CLOSE");
-            }
+
+            AddToiTunes();
+
+            view.Report("Done!", true);
+
             BugSenseHandler.Instance.ClearCrashExtraData();
             BugSenseHandler.Instance.ClearBreadCrumbs();
         }
@@ -306,7 +300,7 @@ namespace SDownload
         /// <param name="size">Length of the string</param>
         /// <see cref="http://stackoverflow.com/questions/1122483/c-sharp-random-string-generator"/>
         /// <returns>A randomized string </returns>
-        private static String RandomString(int size)
+        private static String GenerateRandomString(int size)
         {
             var builder = new StringBuilder();
             var random = new Random();
@@ -324,7 +318,7 @@ namespace SDownload
         /// </summary>
         /// <param name="value">The title of the song</param>
         /// <returns>A cleaned filename for the given title</returns>
-        public static string GetFileName(string value)
+        public static string GetCleanFileName(string value)
         {
             var sb = new StringBuilder(value);
             var invalid = Path.GetInvalidFileNameChars();

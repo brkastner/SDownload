@@ -105,7 +105,7 @@ namespace SDownload
                     var link = args[0].Contains("sdownload://") ? args[0].Substring(12) : args[0];
                     if (!link.StartsWith("launch"))
                     {
-                        var sound = Sound.PrepareLink(link, null);
+                        var sound = Sound.Parse(link, new InfoReportProxy());
                         sound.Download();
 
                         // Log the song genre to see how SDownload is used
@@ -141,7 +141,7 @@ namespace SDownload
                 _listener.OnReceive += context =>
                                            {
                                                var data = context.DataFrame.ToString();
-                                               var sound = Sound.PrepareLink(data, context);
+                                               var sound = Sound.Parse(data, new WSReportProxy(context));
                                                sound.Download();
 
                                                // Log the song genre to see how SDownload is used
