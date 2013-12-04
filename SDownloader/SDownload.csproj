@@ -114,6 +114,7 @@
     <Compile Include="Dialogs\UpdateAvailableDialog.Designer.cs">
       <DependentUpon>UpdateAvailableDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Framework\Streams\BaseStream.cs" />
     <Compile Include="Framework\GithubReleaseApi.cs" />
     <Compile Include="Framework\HandledException.cs" />
     <Compile Include="Framework\Progress Reporting\InfoReportProxy.cs" />
@@ -130,7 +131,7 @@
     <Compile Include="Dialogs\SettingsForm.Designer.cs">
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Sound.cs" />
+    <Compile Include="Framework\Streams\SCStream.cs" />
     <Compile Include="Program.cs">
       <SubType>Form</SubType>
     </Compile>

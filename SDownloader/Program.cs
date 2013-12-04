@@ -13,6 +13,7 @@ using BugSense;
 using BugSense.Model;
 using SDownload.Dialogs;
 using SDownload.Framework;
+using SDownload.Framework.Streams;
 using Resources = SDownload.Properties.Resources;
 
 namespace SDownload
@@ -78,6 +79,19 @@ namespace SDownload
             Application.Run(new Program(args));
         }
 
+        private static async void DownloadUrl(String url, InfoReportProxy view)
+        {
+            var sound = new SCStream(url, view);
+            var download = sound.Download();
+
+            // Log the song genre to see how SDownload is used
+            if (sound.Genre != null && !sound.Genre.Equals(String.Empty))
+                BugSenseHandler.Instance.SendEvent(sound.Genre);
+
+            if (download != null && await download)
+                sound.Finish();
+        }
+
         /// <summary>
         /// Set up the helper service and check for extension installation and updates
         /// </summary>
@@ -105,18 +119,7 @@ namespace SDownload
                 {
                     var link = args[0].Contains("sdownload://") ? args[0].Substring(12) : args[0];
                     if (!link.StartsWith("launch"))
-                    {
-                        var sound = Sound.Parse(link, new InfoReportProxy());
-                        if (sound != null)
-                        {
-                            sound.Download();
-                            sound.Finish();
-
-                            // Log the song genre to see how SDownload is used
-                            if (sound.Genre != null && !sound.Genre.Equals(String.Empty))
-                                BugSenseHandler.Instance.SendEvent(sound.Genre);
-                        }
-                    }
+                        DownloadUrl(link, new InfoReportProxy());
                 }
 
                 const String donateUrl =
@@ -124,7 +127,7 @@ namespace SDownload
 
                 _mainMenu = new ContextMenu();
                 _mainMenu.MenuItems.Add("Donate", (sender, eargs) => Process.Start(donateUrl));
-                _mainMenu.MenuItems.Add("Check for Updates", (sender, eargs) => CheckVersionAsync());
+                _mainMenu.MenuItems.Add("Check for Updates", (sender, eargs) => CheckVersion());
                 _mainMenu.MenuItems.Add("Settings", ShowSettings);
                 _mainMenu.MenuItems.Add("Download Chrome Extension", DownloadChromeExtension);
                 _mainMenu.MenuItems.Add("Exit", ConfirmExitApplication);
@@ -143,44 +146,20 @@ namespace SDownload
                                     };
 
                 _listener = new WebSocketServer(7030, IPAddress.Parse("127.0.0.1"));
-                _listener.OnReceive += async context =>
+                _listener.OnReceive += context =>
                                            {
                                                var data = context.DataFrame.ToString();
-                                               var browser = new WSReportProxy(context);
-                                               var sound = Sound.Parse(data, browser);
-                                               if (sound != null)
-                                               {
-                                                   Task<bool> download = null;
-                                                   try
-                                                   {
-                                                       download = sound.Download();
-                                                   }
-                                                   catch (Exception)
-                                                   {
-                                                       browser.Report("Download impossible!", true);
-                                                   }
+                                               DownloadUrl(data, new WSReportProxy(context));
 
-                                                   // Log the song genre to see how SDownload is used
-                                                   if (sound.Genre != null && !sound.Genre.Equals(String.Empty))
-                                                       BugSenseHandler.Instance.SendEvent(sound.Genre);
-
-                                                   // Check for updates after the song has already started downloading
-                                                   if (Settings.CheckForUpdates)
-                                                       CheckVersionAsync();
-
-                                                   if (download != null && await download)
-                                                       sound.Finish();
-                                               }
-                                               else
-                                               {
-                                                   browser.Report("Error!", true);
-                                               }
+                                               // Check for updates after the song has already started downloading
+                                               if (Settings.CheckForUpdates)
+                                                   CheckVersion();
                                            };
                 _listener.Start();
 
                 // Asynchronously check for updates
                 if (Settings.CheckForUpdates)
-                    CheckVersionAsync();
+                    CheckVersion();
 
                 // Check if Chrome extension installed
                 ValidateChromeInstallation();
@@ -241,7 +220,7 @@ namespace SDownload
         /// <summary>
         /// Checks if the current version is the newest version
         /// </summary>
-        private static void CheckVersionAsync()
+        private static void CheckVersion()
         {
             try
             {

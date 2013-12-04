@@ -20,49 +20,20 @@ using SFile = TagLib.File;
 using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 using Resources = SDownload.Properties.Resources;
 
-namespace SDownload
+namespace SDownload.Framework.Streams
 {
     /// <summary>
     /// Represents a Song file downloaded from SoundCloud
     /// </summary>
-    public class Sound
+    public class SCStream : BaseStream
     {
         private const String Clientid = "4515286ec9d4ace678140c3f84357b35";
 
-        private TrackData _trackData;
-        private String _title;
-        private String _author;
-        private String _origUrl;
+        private readonly TrackData _trackData;
+        private readonly String _title;
+        private readonly String _author;
+        private readonly String _origUrl;
         public String Genre;
-
-        protected InfoReportProxy View;
-
-        protected DownloadItem MainResource;
-        protected List<DownloadItem> Extras = new List<DownloadItem>();
-
-        protected class DownloadItem
-        {
-            /// <summary>
-            /// The URI of the remote stream
-            /// </summary>
-            public Uri Uri;
-
-            /// <summary>
-            /// The absolute local path where it should be saved
-            /// </summary>
-            public String AbsolutePath;
-
-            /// <summary>
-            /// Creates an object to be downloaded
-            /// </summary>
-            /// <param name="uri">URI of the remote stream</param>
-            /// <param name="absolutePath">Absolute path where it should be saved</param>
-            public DownloadItem(Uri uri, String absolutePath)
-            {
-                Uri = uri;
-                AbsolutePath = absolutePath;
-            }
-        }
 
         /// <summary>
         /// Add the song to iTunes
@@ -167,16 +138,14 @@ namespace SDownload
         }
 
         /// <summary>
-        /// Gather all the necessary information for downloading the actual remote resource
+        /// Gather and prepare all the necessary information for downloading the actual remote resource
         /// </summary>
         /// <param name="url">The URL to the individual song</param>
         /// <param name="view">The connection associated with the browser extension</param>
         /// <returns>A Sound representation of the remote resource</returns>
-        public static Sound Parse(String url, InfoReportProxy view)
+        public SCStream(String url, InfoReportProxy view) : base(url, view)
         {
-            view.Report("Processing");
-            BugSenseHandler.Instance.AddCrashExtraData(new CrashExtraData { Key = "song_url", Value = url });
-            TrackData track;
+            TrackData track = null;
             try
             {
                 const String resolveUrl = "http://api.soundcloud.com/resolve?url={0}&client_id={1}";
@@ -187,14 +156,14 @@ namespace SDownload
                 if (response == null)
                     throw new HandledException("Soundcloud API failed to respond! This could due to an issue with your connection.");
                 track = new DataContractJsonSerializer(typeof(TrackData)).ReadObject(response) as TrackData;
-                if (track == null)
-                    throw new HandledException("Downloaded track information was corrupted!", true);
             }
             catch (Exception e)
             {
                 HandledException.Throw("There was an issue connecting to the Soundcloud API.", e);
-                return null;
             }
+
+            if (track == null)
+                throw new HandledException("Downloaded track information was corrupted!", true);
 
             var tokens = WebUtility.HtmlDecode(track.Title).Split('-');
             var author = track.User.Username;
@@ -216,30 +185,27 @@ namespace SDownload
                 Directory.CreateDirectory(directory);
 
             // Use the download url if it exists, probably better quality
-            var songUrl = GetDownloadUrl(url, track);
             var absoluteUrl = directory + "\\" + GetCleanFileName(title) + ".mp3";
             var artworkUrl = track.ArtworkUrl ?? track.User.AvatarUrl;
 
             var extras = new List<DownloadItem>
-                             {new DownloadItem(new Uri(artworkUrl), Path.GetTempPath() + "\\" + rand + ".jpg")};
+                             {new DownloadItem(new Uri(artworkUrl), Path.GetTempPath() + rand + ".jpg")};
 
-            // Create and return the sound representation
-            return new Sound
-                       {
-                           _trackData = track,
-                           _title = title,
-                           _author = author,
-                           _origUrl = url,
-                           Genre = track.Genre ?? "",
-                           MainResource = new DownloadItem(new Uri(songUrl), absoluteUrl),
-                           Extras = extras,
-                           View = view
-                       };
+            // Save the class variables
+            // TODO: clean this up and assign values as you go
+            _trackData = track;
+            _title = title;
+            _author = author;
+            _origUrl = url;
+            Genre = track.Genre ?? "";
+            MainResource = new DownloadItem(new Uri(GetDownloadUrl()), absoluteUrl);
+            Extras = extras;
+            View = view;
         }
 
-        private static String GetDownloadUrl(String url, TrackData track, bool forceStream = false, bool forceManual = false)
+        private String GetDownloadUrl(bool forceStream = false, bool forceManual = false)
         {
-            var songDownload = (track.DownloadUrl != null && Settings.UseDownloadLink && !forceStream) ? track.DownloadUrl : track.StreamUrl;
+            var songDownload = (_trackData.DownloadUrl != null && Settings.UseDownloadLink && !forceStream) ? _trackData.DownloadUrl : _trackData.StreamUrl;
             if (songDownload == null || forceManual)
             {
                 // There was no stream URL or download URL for the song, manually parse the resource stream link from the original URL
@@ -247,7 +213,7 @@ namespace SDownload
                 HttpWebResponse response;
                 try
                 {
-                    var request = (HttpWebRequest)WebRequest.Create(url);
+                    var request = (HttpWebRequest)WebRequest.Create(_origUrl);
                     response = (HttpWebResponse)request.GetResponse();
                 }
                 catch (Exception e)
@@ -266,45 +232,36 @@ namespace SDownload
             return songDownload + "?client_id=" + Clientid;
         }
 
-        /// <summary>
-        /// Downloads the Sound representation and any extra files that accompany it
-        /// <param name="ignoreExtras">If true, extra files will not be downloaded. (Useful for retrying the main download)</param>
-        /// <returns>A boolean value representing if the download was successful or not</returns>
-        /// </summary>
-        public async Task<bool> Download(bool ignoreExtras = false)
+        public override async Task<bool> Download(bool ignoreExtras = false)
         {
-            View.Report("Downloading");
-            // Download the main resource
-            var mainDownloader = new WebClient();
-            mainDownloader.DownloadProgressChanged += (sender, e) => View.Report(String.Format("{0}%", e.ProgressPercentage));
-            var resourceDownload = mainDownloader.DownloadFileTaskAsync(MainResource.Uri, MainResource.AbsolutePath);
-
-            IEnumerable<Task> extraTasks = null;
-
-            // Download additional files
-            if (!ignoreExtras)
+            try
             {
-                extraTasks = Extras.Select(extra => new WebClient().DownloadFileTaskAsync(extra.Uri, extra.AbsolutePath));
+                return await base.Download(ignoreExtras);
             }
-
-            await resourceDownload;
-            var ret = Validate();
-            if (extraTasks != null)
-                Task.WaitAll(extraTasks.ToArray());
-
-            return ret;
+            catch (Exception e)
+            {
+                if (e.Message.Contains("Not Found"))
+                {
+                    View.Report("Download impossible!", true);
+                }
+                else
+                    HandledException.Throw("There was an issue downloading the necessary file(s)!", e);
+                return false;
+            }
         }
-
-        public virtual bool Validate()
+        
+        public override bool Validate()
         {
-            View.Report("Validating");
+            if (!base.Validate())
+                return false;
+
             // TODO: Possibly find a better way to validate more file types quicker
             // perhaps by reading the resolved url ending rather than assuming mp3 immediately
             SFile file = null;
             try
             {
                 // Test if the file is a valid mp3
-                SFile.Create(MainResource.AbsolutePath);
+                file = SFile.Create(MainResource.AbsolutePath);
             } catch (CorruptFileException)
             {
                 try
@@ -320,7 +277,7 @@ namespace SDownload
                     File.Delete(MainResource.AbsolutePath);
                     // File could not be validated, Use the stream download
                     View.Report("Retrying");
-                    MainResource.Uri = new Uri(GetDownloadUrl(_origUrl, _trackData, true));
+                    MainResource.Uri = new Uri(GetDownloadUrl(true));
                     Download(true);
                 }
             }
@@ -328,7 +285,7 @@ namespace SDownload
             return file != null;
         }
 
-        public void Finish()
+        public override void Finish()
         {
             View.Report("Finalizing");
             try
@@ -341,48 +298,9 @@ namespace SDownload
                 View.Report("Invalid file!", true);
                 HandledException.Throw("Invalid file was downloaded!", e);
                 return;
-
-            }
-            View.Report("Done!", true);
-
-            BugSenseHandler.Instance.ClearCrashExtraData();
-            BugSenseHandler.Instance.ClearBreadCrumbs();
-        }
-
-        /// <summary>
-        /// Generate a random string of a given length
-        /// </summary>
-        /// <param name="size">Length of the string</param>
-        /// <see cref="http://stackoverflow.com/questions/1122483/c-sharp-random-string-generator"/>
-        /// <returns>A randomized string </returns>
-        private static String GenerateRandomString(int size)
-        {
-            var builder = new StringBuilder();
-            var random = new Random();
-            for (var i = 0; i < size; i++)
-            {
-                var ch = Convert.ToChar(Convert.ToInt32(Math.Floor(26 * random.NextDouble() + 65)));
-                builder.Append(ch);
             }
 
-            return builder.ToString();
-        }
-
-        /// <summary>
-        /// Get the clean filename for a title
-        /// </summary>
-        /// <param name="value">The title of the song</param>
-        /// <returns>A cleaned filename for the given title</returns>
-        public static string GetCleanFileName(string value)
-        {
-            var sb = new StringBuilder(value);
-            var invalid = Path.GetInvalidFileNameChars();
-            foreach (var item in invalid)
-            {
-                sb.Replace(item.ToString(CultureInfo.InvariantCulture), "");
-            }
-            sb.Replace("\\", "_");
-            return sb.ToString();
+            base.Finish();
         }
     }
 }

@@ -40,7 +40,7 @@ namespace SDownload
             }
             catch (Exception e)
             {
-                throw new Exception("There was an issue communicating with the UI!", e);
+                HandledException.Throw("There was an issue communicating with the UI!", e);
             }
         }
 
