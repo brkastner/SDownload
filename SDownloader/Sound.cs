@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
@@ -27,30 +28,55 @@ namespace SDownload
     public class Sound
     {
         private const String Clientid = "4515286ec9d4ace678140c3f84357b35";
-        public String Title;
-        public String Author;
-        public String Genre;
+
         private TrackData _trackData;
-        private String _url;
+        private String _title;
+        private String _author;
+        private String _origUrl;
+        public String Genre;
 
-        private InfoReportProxy view;
+        protected InfoReportProxy View;
 
-        private String _tempFile;
+        protected DownloadItem MainResource;
+        protected List<DownloadItem> Extras = new List<DownloadItem>();
 
-        private String _absolutePath;
+        protected class DownloadItem
+        {
+            /// <summary>
+            /// The URI of the remote stream
+            /// </summary>
+            public Uri Uri;
 
-        private Task _artworkDownloadTask;
+            /// <summary>
+            /// The absolute local path where it should be saved
+            /// </summary>
+            public String AbsolutePath;
+
+            /// <summary>
+            /// Creates an object to be downloaded
+            /// </summary>
+            /// <param name="uri">URI of the remote stream</param>
+            /// <param name="absolutePath">Absolute path where it should be saved</param>
+            public DownloadItem(Uri uri, String absolutePath)
+            {
+                Uri = uri;
+                AbsolutePath = absolutePath;
+            }
+        }
 
         /// <summary>
         /// Add the song to iTunes
         /// </summary>
-        public void AddToiTunes()
+        private void AddToiTunes()
         {
             var newdir = String.Format("{0}\\iTunes\\iTunes Media\\Automatically Add to iTunes\\{1}.{2}", 
-                Settings.CustomITunesLocation ?? Environment.GetFolderPath(Environment.SpecialFolder.MyMusic), GetCleanFileName(Title), 
-                _absolutePath.Substring(_absolutePath.Length-3));
+                Settings.CustomITunesLocation ?? Environment.GetFolderPath(Environment.SpecialFolder.MyMusic), GetCleanFileName(_title), 
+                MainResource.AbsolutePath.Substring(MainResource.AbsolutePath.Length-3));
+
+            // TODO: Ask the user first
             if (File.Exists(newdir)) 
                 File.Delete(newdir);
+
             try
             {
                 switch (Settings.TunesTransfer)
@@ -58,19 +84,19 @@ namespace SDownload
                     case Settings.TunesSetting.Move:
                         {
                             BugSenseHandler.Instance.LeaveBreadCrumb("Moving song to iTunes");
-                            File.Move(_absolutePath, newdir);
+                            File.Move(MainResource.AbsolutePath, newdir);
 
                             // Delete the artist folder if empty
-                            if (Settings.AuthorFolder && _absolutePath.StartsWith(Settings.DownloadFolder + Author) 
-                                && !Directory.EnumerateFileSystemEntries(Settings.DownloadFolder + Author).Any())
+                            if (Settings.AuthorFolder && MainResource.AbsolutePath.StartsWith(Settings.DownloadFolder + _author) 
+                                && !Directory.EnumerateFileSystemEntries(Settings.DownloadFolder + _author).Any())
                             {
-                                Directory.Delete(Settings.DownloadFolder + Author);
+                                Directory.Delete(Settings.DownloadFolder + _author);
                             }
                             break;
                         }
                     case Settings.TunesSetting.Copy:
                         BugSenseHandler.Instance.LeaveBreadCrumb("Copying song to iTunes");
-                        File.Copy(_absolutePath, newdir);
+                        File.Copy(MainResource.AbsolutePath, newdir);
                         break;
                 }
             }
@@ -111,21 +137,21 @@ namespace SDownload
         /// <summary>
         /// Update the ID3 tags
         /// </summary>
-        public void UpdateId3Tags()
+        private void UpdateId3Tags()
         {
-            var song = SFile.Create(_absolutePath);
-
+            // Load the song file
+            var song = SFile.Create(Extras[0].AbsolutePath);
             if (song == null)
                 return;
 
             // Title
-            if (!String.IsNullOrEmpty(Title))
-                song.Tag.Title = Title;
+            if (!String.IsNullOrEmpty(_title))
+                song.Tag.Title = _title;
 
             // Artist (Performer and Album Artist)
-            if (!String.IsNullOrEmpty(Author))
+            if (!String.IsNullOrEmpty(_author))
             {
-                var authorTag = new[] {Author};
+                var authorTag = new[] {_author};
                 song.Tag.Performers = authorTag;
                 song.Tag.AlbumArtists = authorTag;
             }
@@ -135,7 +161,7 @@ namespace SDownload
                 song.Tag.Genres = new[] {Genre};
 
             // Album Art
-            song.Tag.Pictures = new IPicture[] {new Picture(_tempFile + ".jpg")};
+            song.Tag.Pictures = new IPicture[] {new Picture(Extras[0].AbsolutePath)};
 
             song.Save();
         }
@@ -144,10 +170,11 @@ namespace SDownload
         /// Gather all the necessary information for downloading the actual remote resource
         /// </summary>
         /// <param name="url">The URL to the individual song</param>
-        /// <param name="proxy">The connection associated with the browser extension</param>
+        /// <param name="view">The connection associated with the browser extension</param>
         /// <returns>A Sound representation of the remote resource</returns>
-        public static Sound Parse(String url, InfoReportProxy proxy)
+        public static Sound Parse(String url, InfoReportProxy view)
         {
+            view.Report("Processing");
             BugSenseHandler.Instance.AddCrashExtraData(new CrashExtraData { Key = "song_url", Value = url });
             TrackData track;
             try
@@ -158,14 +185,14 @@ namespace SDownload
                 request.Accept = "application/json";
                 var response = request.GetResponse().GetResponseStream();
                 if (response == null)
-                    throw new HandledException("Soundcloud API failed to respond!");
+                    throw new HandledException("Soundcloud API failed to respond! This could due to an issue with your connection.");
                 track = new DataContractJsonSerializer(typeof(TrackData)).ReadObject(response) as TrackData;
                 if (track == null)
-                    throw new HandledException("Could not deserialize the track information!", true);
+                    throw new HandledException("Downloaded track information was corrupted!", true);
             }
             catch (Exception e)
             {
-                HandledException.Throw("Unable to make a connection to the specified URL.", e);
+                HandledException.Throw("There was an issue connecting to the Soundcloud API.", e);
                 return null;
             }
 
@@ -183,30 +210,36 @@ namespace SDownload
 
             var rand = GenerateRandomString(8) + ".mp3";
 
-            // Create and return the sound representation
-            return new Sound
-                       {
-                           _trackData = track,
-                           _tempFile = Path.GetTempPath() + "\\" + rand,
-                           Title = title,
-                           Author = author,
-                           Genre = track.Genre ?? "",
-                           _url = url,
-                           view = proxy,
-                       };
-        }
+            var directory = Settings.DownloadFolder + GetCleanFileName(Settings.AuthorFolder ? author : "");
 
-        /// <summary>
-        /// Downloads the Sound representation
-        /// </summary>
-        public void Download(bool forceManual = false)
-        {
-            var directory = Settings.DownloadFolder + GetCleanFileName(Settings.AuthorFolder ? Author : "");
             if (!Directory.Exists(directory))
                 Directory.CreateDirectory(directory);
 
             // Use the download url if it exists, probably better quality
-            var songDownload = (_trackData.DownloadUrl != null && Settings.UseDownloadLink) ? _trackData.DownloadUrl : _trackData.StreamUrl;
+            var songUrl = GetDownloadUrl(url, track);
+            var absoluteUrl = directory + "\\" + GetCleanFileName(title) + ".mp3";
+            var artworkUrl = track.ArtworkUrl ?? track.User.AvatarUrl;
+
+            var extras = new List<DownloadItem>
+                             {new DownloadItem(new Uri(artworkUrl), Path.GetTempPath() + "\\" + rand + ".jpg")};
+
+            // Create and return the sound representation
+            return new Sound
+                       {
+                           _trackData = track,
+                           _title = title,
+                           _author = author,
+                           _origUrl = url,
+                           Genre = track.Genre ?? "",
+                           MainResource = new DownloadItem(new Uri(songUrl), absoluteUrl),
+                           Extras = extras,
+                           View = view
+                       };
+        }
+
+        private static String GetDownloadUrl(String url, TrackData track, bool forceStream = false, bool forceManual = false)
+        {
+            var songDownload = (track.DownloadUrl != null && Settings.UseDownloadLink && !forceStream) ? track.DownloadUrl : track.StreamUrl;
             if (songDownload == null || forceManual)
             {
                 // There was no stream URL or download URL for the song, manually parse the resource stream link from the original URL
@@ -214,15 +247,15 @@ namespace SDownload
                 HttpWebResponse response;
                 try
                 {
-                    var request = (HttpWebRequest) WebRequest.Create(_url);
-                    response = (HttpWebResponse) request.GetResponse();
+                    var request = (HttpWebRequest)WebRequest.Create(url);
+                    response = (HttpWebResponse)request.GetResponse();
                 }
                 catch (Exception e)
                 {
                     HandledException.Throw("Song does not allow streaming and there was an issue manually downloading the song file!", e, false);
-                    view.Close();
-                    return;
+                    return null;
                 }
+
                 var doc = new HtmlDocument();
                 doc.Load(response.GetResponseStream());
                 var searchString = WebUtility.HtmlDecode(doc.DocumentNode.InnerHtml);
@@ -230,65 +263,99 @@ namespace SDownload
                 songDownload = links[0].Value;
             }
 
-            // Download the song and report progress to the browser
-            var songDownloader = new WebClient();
-            songDownloader.DownloadFileCompleted += SongFileDownloadCompleted;
-            songDownloader.DownloadProgressChanged += (sender, e) => view.Report(String.Format("{0}%", e.ProgressPercentage));
-            _absolutePath = directory + "\\" + GetCleanFileName(Title) + ".mp3";
-            String songUrl = songDownload + "?client_id=" + Clientid;
-
-            // Download the album art silently in the background, if it hasn't been done already
-            if (_artworkDownloadTask == null)
-            {
-                var artDownloader = new WebClient();
-                String artworkUrl = _trackData.ArtworkUrl ?? _trackData.User.AvatarUrl;
-                _artworkDownloadTask = artDownloader.DownloadFileTaskAsync(new Uri(artworkUrl), _tempFile + ".jpg");
-            }
-
-            songDownloader.DownloadFileAsync(new Uri(songUrl), _absolutePath);
+            return songDownload + "?client_id=" + Clientid;
         }
 
         /// <summary>
-        /// Keeps track of what still needs to be downloaded and performs any 
-        /// necessary post-download tasks once all files have been downloaded
+        /// Downloads the Sound representation
         /// </summary>
-        /// <param name="sender">Not used</param>
-        /// <param name="e">Download Information</param>
-        private async void SongFileDownloadCompleted(object sender, AsyncCompletedEventArgs e)
+        public async Task<bool> Download(bool ignoreExtras = false)
         {
-            if (e.Error != null)
+            View.Report("Downloading");
+            // Download the main resource
+            var mainDownloader = new WebClient();
+            mainDownloader.DownloadProgressChanged += (sender, e) => View.Report(String.Format("{0}%", e.ProgressPercentage));
+            var resourceDownload = mainDownloader.DownloadFileTaskAsync(MainResource.Uri, MainResource.AbsolutePath);
+
+            IEnumerable<Task> extraTasks = null;
+
+            // Download additional files
+            if (!ignoreExtras)
             {
-                // Soundcloud api has an issue with StreamUrl, need to download the song w/o API
-                if (e.Error.Message.Contains("Not Found"))
-                {
-                    view.Report("Streaming disabled by Artist :C", true);
-                    return;
-                }
-                throw new HandledException(e.Error.ToString(), true);
+                extraTasks = Extras.Select(extra => new WebClient().DownloadFileTaskAsync(extra.Uri, extra.AbsolutePath));
             }
 
-            // Wait for the artwork to finish downloading
-            await _artworkDownloadTask;
+            try
+            {
+                await resourceDownload;
+                var ret = Validate();
+                if (extraTasks != null)
+                    Task.WaitAll(extraTasks.ToArray());
 
-            view.Report("Validating");
+                return ret;
+            }
+            catch (Exception e)
+            {
+                /* Soundcloud api has an issue with StreamUrl, need to download the song w/o API
+                   TODO: Confirm this 100%, possibly check error better */
+                if (e.Message.Contains("Not Found"))
+                {
+                    View.Report("Streaming disabled by Artist :C", true);
+                    // TODO: Switch to using manual, should hoepfully work
+                } else
+                    HandledException.Throw(e.Message, e);
+            }
+            return false;
+        }
+
+        public virtual bool Validate()
+        {
+            // TODO: Possibly find a better way to validate more file types quicker
+            // perhaps by reading the resolved url ending
+            SFile file = null;
+            try
+            {
+                // Test if the file is a valid mp3
+                SFile.Create(MainResource.AbsolutePath);
+            } catch (CorruptFileException)
+            {
+                try
+                {
+                    // Check if the file is wma
+                    var old = MainResource.AbsolutePath;
+                    MainResource.AbsolutePath = MainResource.AbsolutePath.Substring(0,
+                                                                                    MainResource.AbsolutePath.Length - 3) + "wma";
+                    File.Move(old, MainResource.AbsolutePath);
+                    file = SFile.Create(MainResource.AbsolutePath);
+                } catch (CorruptFileException)
+                {
+                    File.Delete(MainResource.AbsolutePath);
+                    // File not supported by validation, Use the stream download
+                    View.Report("Retrying");
+                    new WebClient().DownloadFile(new Uri(GetDownloadUrl(_origUrl, _trackData, true)), MainResource.AbsolutePath);
+                }
+            }
+
+            return file != null;
+        }
+
+        public void Finish()
+        {
+            View.Report("Finalizing");
             try
             {
                 UpdateId3Tags();
-            } 
-            catch (CorruptFileException)
+            } catch (Exception e1)
             {
-                // Provided download link was not mp3, manually download file
-                view.Report("Invalid Format, Retrying");
-                var songDownloader = new WebClient();
-                songDownloader.DownloadFileCompleted += SongFileDownloadCompleted;
-                songDownloader.DownloadProgressChanged += (s, e2) => view.Report(String.Format("{0}%", e2.ProgressPercentage));
-                songDownloader.DownloadFileAsync(new Uri(_trackData.StreamUrl + "?client_id=" + Clientid), _absolutePath);
+                // Should have been handled already
+                View.Report("Invalid file!", true);
+                HandledException.Throw("Invalid file was downloaded!", e1);
                 return;
-            }
 
+            }
             AddToiTunes();
 
-            view.Report("Done!", true);
+            View.Report("Done!", true);
 
             BugSenseHandler.Instance.ClearCrashExtraData();
             BugSenseHandler.Instance.ClearBreadCrumbs();

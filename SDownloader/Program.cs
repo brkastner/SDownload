@@ -106,11 +106,15 @@ namespace SDownload
                     if (!link.StartsWith("launch"))
                     {
                         var sound = Sound.Parse(link, new InfoReportProxy());
-                        sound.Download();
+                        if (sound != null)
+                        {
+                            sound.Download();
+                            sound.Finish();
 
-                        // Log the song genre to see how SDownload is used
-                        if (sound.Genre != null && !sound.Genre.Equals(String.Empty))
-                            BugSenseHandler.Instance.SendEvent(sound.Genre);
+                            // Log the song genre to see how SDownload is used
+                            if (sound.Genre != null && !sound.Genre.Equals(String.Empty))
+                                BugSenseHandler.Instance.SendEvent(sound.Genre);
+                        }
                     }
                 }
 
@@ -138,19 +142,30 @@ namespace SDownload
                                     };
 
                 _listener = new WebSocketServer(7030, IPAddress.Parse("127.0.0.1"));
-                _listener.OnReceive += context =>
+                _listener.OnReceive += async context =>
                                            {
                                                var data = context.DataFrame.ToString();
-                                               var sound = Sound.Parse(data, new WSReportProxy(context));
-                                               sound.Download();
+                                               var browser = new WSReportProxy(context);
+                                               var sound = Sound.Parse(data, browser);
+                                               if (sound != null)
+                                               {
+                                                   var download = sound.Download();
 
-                                               // Log the song genre to see how SDownload is used
-                                               if (sound.Genre != null && !sound.Genre.Equals(String.Empty))
-                                                    BugSenseHandler.Instance.SendEvent(sound.Genre);
+                                                   // Log the song genre to see how SDownload is used
+                                                   if (sound.Genre != null && !sound.Genre.Equals(String.Empty))
+                                                       BugSenseHandler.Instance.SendEvent(sound.Genre);
 
-                                               // Check for updates after the song has already downloaded
-                                               if (Settings.CheckForUpdates)
-                                                   CheckVersionAsync();
+                                                   // Check for updates after the song has already downloaded
+                                                   if (Settings.CheckForUpdates)
+                                                       CheckVersionAsync();
+
+                                                   if (await download)
+                                                       sound.Finish();
+                                               }
+                                               else
+                                               {
+                                                   browser.Report("Error!", true);
+                                               }
                                            };
                 _listener.Start();
 
