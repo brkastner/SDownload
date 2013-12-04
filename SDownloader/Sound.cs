@@ -296,14 +296,19 @@ namespace SDownload
             }
             catch (Exception e)
             {
-                /* Soundcloud api has an issue with StreamUrl, need to download the song w/o API
-                   TODO: Confirm this 100%, possibly check error better */
+                /* TODO:
+                 * Some songs on Soundcloud cannot be streamed via the API or downloaded directly.
+                 * The current direct method could possibly be altered to look for a different media stream.
+                 */
                 if (e.Message.Contains("Not Found"))
                 {
                     View.Report("Streaming disabled by Artist :C", true);
-                    // TODO: Switch to using manual, should hoepfully work
-                } else
+                } 
+                else
+                {
+                    View.Close();
                     HandledException.Throw(e.Message, e);
+                }
             }
             return false;
         }
