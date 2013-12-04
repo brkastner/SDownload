@@ -1,6 +1,0 @@
-[submodule "Release"]
-	path = Release
-	url = git@github.com:brkastner/SDownload.git
-[submodule "TagLib"]
-	path = TagLib
-	url = https://github.com/mono/taglib-sharp.git
