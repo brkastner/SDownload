@@ -70,7 +70,6 @@ namespace SDownload
             const string uncaughtErrorMsg =
                 "SDownload has encountered an unexpected bug and needs to stop what it was doing. This crash has been recorded in order to improve future versions.";
             var exceptionManager = new ExceptionManager();
-            Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
             exceptionManager.ThreadException += (sender, e) => HandledException.Throw(uncaughtErrorMsg, e.Exception, false);
             exceptionManager.UnhandledException +=
                 (sender, e) => HandledException.Throw(uncaughtErrorMsg, e.ExceptionObject as Exception, false);
