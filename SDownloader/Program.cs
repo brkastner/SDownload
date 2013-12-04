@@ -5,6 +5,7 @@ using System.Net;
 using System.Reflection;
 using System.Runtime.Serialization.Json;
 using System.Threading;
+using System.Threading.Tasks;
 using Alchemy;
 using System;
 using System.Windows.Forms;
@@ -149,17 +150,25 @@ namespace SDownload
                                                var sound = Sound.Parse(data, browser);
                                                if (sound != null)
                                                {
-                                                   var download = sound.Download();
+                                                   Task<bool> download = null;
+                                                   try
+                                                   {
+                                                       download = sound.Download();
+                                                   }
+                                                   catch (Exception)
+                                                   {
+                                                       browser.Report("Download impossible!", true);
+                                                   }
 
                                                    // Log the song genre to see how SDownload is used
                                                    if (sound.Genre != null && !sound.Genre.Equals(String.Empty))
                                                        BugSenseHandler.Instance.SendEvent(sound.Genre);
 
-                                                   // Check for updates after the song has already downloaded
+                                                   // Check for updates after the song has already started downloading
                                                    if (Settings.CheckForUpdates)
                                                        CheckVersionAsync();
 
-                                                   if (await download)
+                                                   if (download != null && await download)
                                                        sound.Finish();
                                                }
                                                else

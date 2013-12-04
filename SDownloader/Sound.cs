@@ -267,7 +267,9 @@ namespace SDownload
         }
 
         /// <summary>
-        /// Downloads the Sound representation
+        /// Downloads the Sound representation and any extra files that accompany it
+        /// <param name="ignoreExtras">If true, extra files will not be downloaded. (Useful for retrying the main download)</param>
+        /// <returns>A boolean value representing if the download was successful or not</returns>
         /// </summary>
         public async Task<bool> Download(bool ignoreExtras = false)
         {
@@ -285,38 +287,19 @@ namespace SDownload
                 extraTasks = Extras.Select(extra => new WebClient().DownloadFileTaskAsync(extra.Uri, extra.AbsolutePath));
             }
 
-            try
-            {
-                await resourceDownload;
-                var ret = Validate();
-                if (extraTasks != null)
-                    Task.WaitAll(extraTasks.ToArray());
+            await resourceDownload;
+            var ret = Validate();
+            if (extraTasks != null)
+                Task.WaitAll(extraTasks.ToArray());
 
-                return ret;
-            }
-            catch (Exception e)
-            {
-                /* TODO:
-                 * Some songs on Soundcloud cannot be streamed via the API or downloaded directly.
-                 * The current direct method could possibly be altered to look for a different media stream.
-                 */
-                if (e.Message.Contains("Not Found"))
-                {
-                    View.Report("Streaming disabled by Artist :C", true);
-                } 
-                else
-                {
-                    View.Close();
-                    HandledException.Throw(e.Message, e);
-                }
-            }
-            return false;
+            return ret;
         }
 
         public virtual bool Validate()
         {
+            View.Report("Validating");
             // TODO: Possibly find a better way to validate more file types quicker
-            // perhaps by reading the resolved url ending
+            // perhaps by reading the resolved url ending rather than assuming mp3 immediately
             SFile file = null;
             try
             {
@@ -335,9 +318,10 @@ namespace SDownload
                 } catch (CorruptFileException)
                 {
                     File.Delete(MainResource.AbsolutePath);
-                    // File not supported by validation, Use the stream download
+                    // File could not be validated, Use the stream download
                     View.Report("Retrying");
-                    new WebClient().DownloadFile(new Uri(GetDownloadUrl(_origUrl, _trackData, true)), MainResource.AbsolutePath);
+                    MainResource.Uri = new Uri(GetDownloadUrl(_origUrl, _trackData, true));
+                    Download(true);
                 }
             }
 
@@ -350,16 +334,15 @@ namespace SDownload
             try
             {
                 UpdateId3Tags();
-            } catch (Exception e1)
+                AddToiTunes();
+            } catch (Exception e)
             {
                 // Should have been handled already
                 View.Report("Invalid file!", true);
-                HandledException.Throw("Invalid file was downloaded!", e1);
+                HandledException.Throw("Invalid file was downloaded!", e);
                 return;
 
             }
-            AddToiTunes();
-
             View.Report("Done!", true);
 
             BugSenseHandler.Instance.ClearCrashExtraData();
