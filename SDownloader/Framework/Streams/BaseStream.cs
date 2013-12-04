@@ -81,9 +81,7 @@ namespace SDownload.Framework.Streams
 
             // Download additional files
             if (!ignoreExtras)
-            {
-                extraTasks = Extras.Select(extra => new WebClient().DownloadFileTaskAsync(extra.Uri, extra.AbsolutePath));
-            }
+                extraTasks = (from extra in Extras select DownloadExtra(extra)).ToList();
 
             await resourceDownload;
             var ret = Validate();
@@ -91,6 +89,11 @@ namespace SDownload.Framework.Streams
                 Task.WaitAll(extraTasks.ToArray());
 
             return ret;
+        }
+
+        private async Task DownloadExtra(DownloadItem item)
+        {
+            await new WebClient().DownloadFileTaskAsync(item.Uri, item.AbsolutePath);
         }
 
         public virtual bool Validate()

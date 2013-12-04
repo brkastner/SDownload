@@ -112,7 +112,7 @@ $(function () {
                     var data = msg.data;
                     $(target).html(data);
                     $(target).attr("title", "SDownload: " + data);
-                    if (data == "CLOSE") {
+                    if (data.indexOf("CLOSE") != -1) {
                         server.close();
                     }
                 };
