@@ -110,10 +110,11 @@ $(function () {
                 // Message was received from the helper extension
                 server.onmessage = function (msg) {
                     var data = msg.data;
-                    $(target).html(data);
-                    $(target).attr("title", "SDownload: " + data);
                     if (data.indexOf("CLOSE") != -1) {
                         server.close();
+                    } else {
+                        $(target).html(data);
+                        $(target).attr("title", "SDownload: " + data);
                     }
                 };
             }
