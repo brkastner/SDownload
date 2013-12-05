@@ -11,11 +11,25 @@ using BugSense.Core.Model;
 
 namespace SDownload.Framework.Streams
 {
+    /// <summary>
+    /// Base stream that defines the flow the program follows for downloading a stream.
+    /// This class can be overridden to provide specific functionality for a certain type of stream.
+    /// </summary>
     public abstract class BaseStream
     {
+        /// <summary>
+        /// The view to report progress back to
+        /// </summary>
         protected InfoReportProxy View;
 
+        /// <summary>
+        /// The main resource that needs to be downloaded
+        /// </summary>
         protected DownloadItem MainResource;
+
+        /// <summary>
+        /// A list of extras that need to be downloaded with the main resource
+        /// </summary>
         protected List<DownloadItem> Extras = new List<DownloadItem>();
 
         /// <summary>
@@ -91,17 +105,32 @@ namespace SDownload.Framework.Streams
             return ret;
         }
 
+        /// <summary>
+        /// Asynchronous method for downloading an item that does not track progress
+        /// </summary>
+        /// <param name="item">The item to download</param>
+        /// <returns>A task representation of the asynchronous call</returns>
         private async Task DownloadExtra(DownloadItem item)
         {
             await new WebClient().DownloadFileTaskAsync(item.Uri, item.AbsolutePath);
         }
 
+        /// <summary>
+        /// Validates the download. The base stream does not do any validation.
+        /// </summary>
+        /// <returns></returns>
         public virtual bool Validate()
         {
             View.Report("Validating");
             return true;
         }
 
+        /// <summary>
+        /// Called once the whole process is finished. Clears any log data and closes the connection
+        /// to the view.
+        /// 
+        /// If this method is overridden, base.Finish() should be called AT THE END of the function.
+        /// </summary>
         public virtual void Finish()
         {
             View.Report("Done!", true);

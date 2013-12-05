@@ -158,7 +158,7 @@ namespace SDownload
 
                 // Asynchronously check for updates
                 if (Settings.CheckForUpdates)
-                    CheckVersion();
+                    new Task(CheckVersion).Start();
 
                 // Check if Chrome extension installed
                 ValidateChromeInstallation();
@@ -249,17 +249,18 @@ namespace SDownload
                 // Combine any new releases to get the changelog from each
                 var newerReleases = (from release in contract
                                      let versionNumbers = (release.TagName.Remove(0, 1)).Split('.')
-                                     where (Int32.Parse(versionNumbers[0]) > currentVersion[0] ||
-                                            Int32.Parse(versionNumbers[0]) == currentVersion[0] &&
-                                            Int32.Parse(versionNumbers[1]) > currentVersion[1] ||
-                                            Int32.Parse(versionNumbers[0]) == currentVersion[0] &&
+                                     where ((Int32.Parse(versionNumbers[0]) > currentVersion[0]) || // Major
+                                            (Int32.Parse(versionNumbers[0]) == currentVersion[0] && // Minor
+                                            Int32.Parse(versionNumbers[1]) > currentVersion[1]) ||
+                                            (Int32.Parse(versionNumbers[0]) == currentVersion[0] && // Incremental
                                             Int32.Parse(versionNumbers[1]) == currentVersion[1] &&
-                                            Int32.Parse(versionNumbers[2]) > currentVersion[2]) && !release.Draft
+                                            Int32.Parse(versionNumbers[2]) > currentVersion[2])) && !release.Draft
                                      select release).ToList();
 
                 if (newerReleases.Count < 1) return;
 
                 // Current version is not up to date, download new version
+                // TODO: Wait to download the update until the user decides to update
                 var downloadRequest = (HttpWebRequest) WebRequest.Create(newerReleases[0].Assets[0].Url);
                 downloadRequest.Accept = "application/octet-stream";
                 downloadRequest.Method = WebRequestMethods.Http.Get;
