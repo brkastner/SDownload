@@ -29,7 +29,7 @@ namespace SDownload.Framework
         {
             get 
             { 
-                var folder = Properties.Settings.Default.DownloadFolder;
+                var folder = Storage.Default.DownloadFolder;
                 folder = folder.Replace("[MUSICFOLDER]", Environment.GetFolderPath(Environment.SpecialFolder.MyMusic));
                 if (!folder.EndsWith("\\"))
                     folder += "\\";
@@ -37,8 +37,8 @@ namespace SDownload.Framework
             }
             set
             {
-                Properties.Settings.Default.DownloadFolder = value;
-                Properties.Settings.Default.Save();
+                Storage.Default.DownloadFolder = value;
+                Storage.Default.Save();
             }
         }
 
@@ -64,11 +64,11 @@ namespace SDownload.Framework
         /// </summary>
         public static bool ConfirmExit
         {
-            get { return Properties.Settings.Default.ConfirmExit; }
+            get { return Storage.Default.ConfirmExit; }
             set 
             { 
-                Properties.Settings.Default.ConfirmExit = value;
-                Properties.Settings.Default.Save();
+                Storage.Default.ConfirmExit = value;
+                Storage.Default.Save();
             }
         }
 
@@ -77,11 +77,11 @@ namespace SDownload.Framework
         /// </summary>
         public static bool CheckForUpdates
         {
-            get { return Properties.Settings.Default.CheckForUpdates; }
+            get { return Storage.Default.CheckForUpdates; }
             set 
             { 
-                Properties.Settings.Default.CheckForUpdates = value;
-                Properties.Settings.Default.Save();
+                Storage.Default.CheckForUpdates = value;
+                Storage.Default.Save();
             }
         }
 
@@ -91,11 +91,11 @@ namespace SDownload.Framework
         /// </summary>
         public static bool AuthorFolder
         {
-            get { return Properties.Settings.Default.AuthorFolder; }
+            get { return Storage.Default.AuthorFolder; }
             set
             {
-                Properties.Settings.Default.AuthorFolder = value;
-                Properties.Settings.Default.Save();
+                Storage.Default.AuthorFolder = value;
+                Storage.Default.Save();
             }
         }
 
@@ -104,11 +104,11 @@ namespace SDownload.Framework
         /// </summary>
         public static bool UseDownloadLink
         {
-            get { return Properties.Settings.Default.UseDownloadLink;  }
+            get { return Storage.Default.UseDownloadLink;  }
             set 
             { 
-                Properties.Settings.Default.UseDownloadLink = value;
-                Properties.Settings.Default.Save();
+                Storage.Default.UseDownloadLink = value;
+                Storage.Default.Save();
             }
         }
 
@@ -121,12 +121,12 @@ namespace SDownload.Framework
         {
             get
             {
-                return (TunesSetting)Properties.Settings.Default.iTunes;
+                return (TunesSetting)Storage.Default.iTunes;
             }
             set
             {
-                Properties.Settings.Default.iTunes = (int)value;
-                Properties.Settings.Default.Save();
+                Storage.Default.iTunes = (int)value;
+                Storage.Default.Save();
             }
         }
 

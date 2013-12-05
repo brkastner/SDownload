@@ -402,7 +402,7 @@ namespace SDownload
                 {
                     if (_mutex != null)
                         _mutex.ReleaseMutex();
-                } catch (ApplicationException e)
+                } catch (ApplicationException)
                 {
                     // Do nothing since the exception is due to attempting to release
                     // a mutex that we do not own
