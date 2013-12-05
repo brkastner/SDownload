@@ -6,7 +6,7 @@ namespace SDownload
     #pragma warning disable
     /// <summary>
     /// Soundcloud API response
-    /// http://developers.soundcloud.com/docs/api/reference#tracks
+    /// <see cref="http://developers.soundcloud.com/docs/api/reference#tracks"/>
     /// </summary>
     [DataContract]
     public class TrackData

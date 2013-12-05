@@ -3,8 +3,14 @@ using SDownload.Framework;
 
 namespace SDownload.Dialogs
 {
+    /// <summary>
+    /// A GUI for changing the application settings
+    /// </summary>
     public partial class SettingsForm : Form
     {
+        /// <summary>
+        /// Initializes the form with the current application settings
+        /// </summary>
         public SettingsForm()
         {
             InitializeComponent();

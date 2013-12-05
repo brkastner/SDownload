@@ -78,6 +78,11 @@ namespace SDownload
             Application.Run(new Program(args));
         }
 
+        /// <summary>
+        /// Parse the given link and send it to the appropriate stream downloader
+        /// </summary>
+        /// <param name="url">The link provided to the application from the view</param>
+        /// <param name="view">The view to report progress back to</param>
         private static async void DownloadUrl(String url, InfoReportProxy view)
         {
             var sound = new SCStream(url, view);
