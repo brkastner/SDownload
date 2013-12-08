@@ -42,7 +42,7 @@ namespace SDownload.Framework
                 (handled == null && canReport) || criticalHandled ? "Report" : "Close",
                 (handled == null && canReport) || criticalHandled ? "Close" : null)
             {
-                ResponseCallback = (result) =>
+                ResponseCallback = result =>
                 {
                     // Log exception only if 'Report' was chosen, and the exception was critical
                     if (result && canReport)
