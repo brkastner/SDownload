@@ -52,8 +52,15 @@ namespace SDownload.Framework.Streams
         /// </summary>
         private readonly String _origUrl;
 
-        private bool _forceStream = false;
-        private bool _forceManual = false;
+        /// <summary>
+        /// If we shoud attempt to download the stream URL
+        /// </summary>
+        private bool _forceStream;
+
+        /// <summary>
+        /// If we should atempt to download the stream manualy (without API)
+        /// </summary>
+        private bool _forceManual;
 
         /// <summary>
         /// Gather and prepare all the necessary information for downloading the actual remote resource
@@ -125,7 +132,13 @@ namespace SDownload.Framework.Streams
             try
             {
                 var result = await base.Download(ignoreExtras);
-                return result && Validate();
+                if (result)
+                {
+                    if (!Validate())
+                        throw new HandledException("The downloaded file does not support editing ID3 tags!");
+                    return true;
+                }
+                return false;
             }
             catch (Exception e)
             {
@@ -141,19 +154,20 @@ namespace SDownload.Framework.Streams
 
         /// <summary>
         /// Confirms the file tags can actually be read, proving the file is valid.
+        /// TODO: Possibly find a better way to validate more file types quicker
+        /// TODO: perhaps by reading the resolved url ending rather than assuming mp3 immediately
         /// </summary>
         /// <returns>True if the file was downloaded correctly and can be modified</returns>
         public override bool Validate()
         {
-            // TODO: Possibly find a better way to validate more file types quicker
-            // perhaps by reading the resolved url ending rather than assuming mp3 immediately
+            var valid = false;
             SFile file = null;
             try
             {
                 // Test if the file is a valid mp3
                 file = SFile.Create(MainResource.AbsolutePath);
             }
-            catch (CorruptFileException)
+            catch (CorruptFileException) // File isn't mp3
             {
                 try
                 {
@@ -164,7 +178,7 @@ namespace SDownload.Framework.Streams
                     File.Move(old, MainResource.AbsolutePath);
                     file = SFile.Create(MainResource.AbsolutePath);
                 }
-                catch (CorruptFileException)
+                catch (CorruptFileException) // File isn't any supported type
                 {
                     File.Delete(MainResource.AbsolutePath);
                     // File could not be validated, Use the stream download
@@ -174,6 +188,7 @@ namespace SDownload.Framework.Streams
                     if (_forceManual)
                         return false;
 
+                    // Set the appropriate method to try next
                     if (_forceStream)
                         _forceManual = true;
                     else
@@ -183,8 +198,15 @@ namespace SDownload.Framework.Streams
                     Download(true);
                 }
             }
-
-            return file != null;
+            finally
+            {
+                if (file != null)
+                {
+                    valid = true;
+                    file.Dispose();
+                }
+            }
+            return valid;
         }
 
         /// <summary>
@@ -285,7 +307,7 @@ namespace SDownload.Framework.Streams
         private void UpdateId3Tags()
         {
             // Load the song file
-            var song = SFile.Create(Extras[0].AbsolutePath);
+            var song = SFile.Create(MainResource.AbsolutePath);
             if (song == null)
                 return;
 
