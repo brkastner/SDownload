@@ -314,16 +314,23 @@ namespace SDownload.Framework.Streams
         /// <summary>
         /// Gets the download url for the main resource
         /// </summary>
-        /// <param name="forceStream">If the provided download URL should be ignored (even if the setting enables it)</param>
-        /// <param name="forceManual">If the download URL & API-provided stream url should be ignored. Parse for the media stream manually.</param>
         /// <returns>The URL the main resource can be downloaded at</returns>
         private String GetDownloadUrl()
         {
             var songDownload = (_trackData.DownloadUrl != null && Settings.UseDownloadLink && !_forceStream) ? _trackData.DownloadUrl : _trackData.StreamUrl;
+
+            // Pretend we forced stream, so on failure we attempt manual next
+            if (songDownload.Equals(_trackData.StreamUrl))
+                _forceStream = true;
+
             if (songDownload == null || _forceManual)
             {
                 // There was no stream URL or download URL for the song, manually parse the resource stream link from the original URL
                 BugSenseHandler.Instance.LeaveBreadCrumb("Manually downloading sound");
+
+                // Manual was forced, on failure we should abort
+                _forceManual = true;
+
                 HttpWebResponse response;
                 try
                 {
