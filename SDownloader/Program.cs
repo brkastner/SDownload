@@ -310,7 +310,7 @@ namespace SDownload
         private void ShowSettings(object sender, EventArgs eventArgs)
         {
             // Only create a form if one doesn't already exist
-            if (_settingsForm == null)
+			if (_settingsForm == null || _settingsForm.IsDisposed)
             {
                 _settingsForm = new SettingsForm();
                 _settingsForm.Closing += (o, args) => { _settingsForm = null; };
