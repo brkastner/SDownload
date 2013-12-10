@@ -42,7 +42,7 @@ namespace SDownload
         /// <summary>
         /// Listener for song download messages
         /// </summary>
-        private readonly WebSocketServer _listener;
+        private WebSocketServer _listener;
 
         /// <summary>
         /// UI for configuring SDownload
@@ -59,6 +59,8 @@ namespace SDownload
         /// </summary>
         private const String ChromeDownloadUrl =
             "https://chrome.google.com/webstore/detail/sdownload/dkflmdcolphnomonabinogaegbjbnbbm";
+
+        private delegate void CheckVersionDelegate();
 
         /// <summary>
         /// The main entry point for the application.
@@ -147,19 +149,9 @@ namespace SDownload
                 _settingsForm = new SettingsForm
                                     {
                                         Visible = false
-                                    };
+                                    }; 
 
-                _listener = new WebSocketServer(7030, IPAddress.Parse("127.0.0.1"));
-                _listener.OnReceive += context =>
-                                           {
-                                               var data = context.DataFrame.ToString();
-                                               DownloadUrl(data, new WSReportProxy(context));
-
-                                               // Check for updates after the song has already started downloading
-                                               if (Settings.CheckForUpdates)
-                                                   CheckVersion();
-                                           };
-                _listener.Start();
+                SetupListener();
 
                 // Asynchronously check for updates
                 if (Settings.CheckForUpdates)
@@ -168,6 +160,21 @@ namespace SDownload
                 // Check if Chrome extension installed
                 ValidateChromeInstallation();
             }
+        }
+
+        private void SetupListener()
+        {
+            _listener = new WebSocketServer(7030, IPAddress.Parse("127.0.0.1"));
+            _listener.OnReceive += context =>
+            {
+                var data = context.DataFrame.ToString();
+                DownloadUrl(data, new WSReportProxy(context));
+
+                // Check for updates after the song has already started downloading
+                if (Settings.CheckForUpdates)
+                    CheckVersion();
+            };
+            _listener.Start();
         }
 
         /// <summary>

@@ -52,6 +52,9 @@ namespace SDownload.Framework.Streams
         /// </summary>
         private readonly String _origUrl;
 
+        private bool _forceStream = false;
+        private bool _forceManual = false;
+
         /// <summary>
         /// Gather and prepare all the necessary information for downloading the actual remote resource
         /// </summary>
@@ -121,7 +124,8 @@ namespace SDownload.Framework.Streams
         {
             try
             {
-                return await base.Download(ignoreExtras);
+                var result = await base.Download(ignoreExtras);
+                return result && Validate();
             }
             catch (Exception e)
             {
@@ -141,9 +145,6 @@ namespace SDownload.Framework.Streams
         /// <returns>True if the file was downloaded correctly and can be modified</returns>
         public override bool Validate()
         {
-            if (!base.Validate())
-                return false;
-
             // TODO: Possibly find a better way to validate more file types quicker
             // perhaps by reading the resolved url ending rather than assuming mp3 immediately
             SFile file = null;
@@ -168,7 +169,17 @@ namespace SDownload.Framework.Streams
                     File.Delete(MainResource.AbsolutePath);
                     // File could not be validated, Use the stream download
                     View.Report("Retrying");
-                    MainResource.Uri = new Uri(GetDownloadUrl(true));
+
+                    // If manual has already been attempted, this isn't possible
+                    if (_forceManual)
+                        return false;
+
+                    if (_forceStream)
+                        _forceManual = true;
+                    else
+                        _forceStream = true;
+
+                    MainResource.Uri = new Uri(GetDownloadUrl());
                     Download(true);
                 }
             }
@@ -306,10 +317,10 @@ namespace SDownload.Framework.Streams
         /// <param name="forceStream">If the provided download URL should be ignored (even if the setting enables it)</param>
         /// <param name="forceManual">If the download URL & API-provided stream url should be ignored. Parse for the media stream manually.</param>
         /// <returns>The URL the main resource can be downloaded at</returns>
-        private String GetDownloadUrl(bool forceStream = false, bool forceManual = false)
+        private String GetDownloadUrl()
         {
-            var songDownload = (_trackData.DownloadUrl != null && Settings.UseDownloadLink && !forceStream) ? _trackData.DownloadUrl : _trackData.StreamUrl;
-            if (songDownload == null || forceManual)
+            var songDownload = (_trackData.DownloadUrl != null && Settings.UseDownloadLink && !_forceStream) ? _trackData.DownloadUrl : _trackData.StreamUrl;
+            if (songDownload == null || _forceManual)
             {
                 // There was no stream URL or download URL for the song, manually parse the resource stream link from the original URL
                 BugSenseHandler.Instance.LeaveBreadCrumb("Manually downloading sound");
