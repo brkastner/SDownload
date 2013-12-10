@@ -105,16 +105,22 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Dialogs\Updates\DownloadProgressDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\Updates\DownloadProgressDialog.Designer.cs">
+      <DependentUpon>DownloadProgressDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Dialogs\YesNoDialog.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Dialogs\YesNoDialog.Designer.cs">
       <DependentUpon>YesNoDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="Dialogs\UpdateAvailableDialog.cs">
+    <Compile Include="Dialogs\Updates\UpdateAvailableDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Dialogs\UpdateAvailableDialog.Designer.cs">
+    <Compile Include="Dialogs\Updates\UpdateAvailableDialog.Designer.cs">
       <DependentUpon>UpdateAvailableDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Framework\Streams\BaseStream.cs" />
@@ -140,10 +146,13 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Framework\TrackData.cs" />
+    <EmbeddedResource Include="Dialogs\Updates\DownloadProgressDialog.resx">
+      <DependentUpon>DownloadProgressDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Dialogs\YesNoDialog.resx">
       <DependentUpon>YesNoDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Dialogs\UpdateAvailableDialog.resx">
+    <EmbeddedResource Include="Dialogs\Updates\UpdateAvailableDialog.resx">
       <DependentUpon>UpdateAvailableDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">

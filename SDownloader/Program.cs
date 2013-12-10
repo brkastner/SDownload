@@ -132,8 +132,8 @@ namespace SDownload
                 _mainMenu = new ContextMenu();
                 _mainMenu.MenuItems.Add("Donate", (sender, eargs) => Process.Start(donateUrl));
                 _mainMenu.MenuItems.Add("Check for Updates", (sender, eargs) => CheckVersion());
-                _mainMenu.MenuItems.Add("Settings", ShowSettings);
                 _mainMenu.MenuItems.Add("Download Chrome Extension", DownloadChromeExtension);
+                _mainMenu.MenuItems.Add("Settings", ShowSettings);
                 _mainMenu.MenuItems.Add("Exit", ConfirmExitApplication);
 
                 _trayIcon = new NotifyIcon
@@ -163,7 +163,7 @@ namespace SDownload
 
                 // Asynchronously check for updates
                 if (Settings.CheckForUpdates)
-                    new Task(CheckVersion).Start();
+                    CheckVersion();
 
                 // Check if Chrome extension installed
                 ValidateChromeInstallation();
@@ -224,7 +224,7 @@ namespace SDownload
         /// <summary>
         /// Checks if the current version is the newest version
         /// </summary>
-        private static void CheckVersion()
+        private void CheckVersion()
         {
             try
             {
@@ -264,26 +264,8 @@ namespace SDownload
 
                 if (newerReleases.Count < 1) return;
 
-                // Current version is not up to date, download new version
-                // TODO: Wait to download the update until the user decides to update
-                var downloadRequest = (HttpWebRequest) WebRequest.Create(newerReleases[0].Assets[0].Url);
-                downloadRequest.Accept = "application/octet-stream";
-                downloadRequest.Method = WebRequestMethods.Http.Get;
-                var downloadResponse = downloadRequest.GetResponse().GetResponseStream();
-                if (downloadResponse == null)
-                    throw new HandledException("There was an issue checking for updates!");
-                var fileLocation = String.Format("{0}\\sdownload_update.exe", Path.GetTempPath());
-                using (var installer = File.OpenWrite(fileLocation))
-                {
-                    int read;
-                    var installerBuffer = new byte[4096];
-                    while ((read = downloadResponse.Read(installerBuffer, 0, installerBuffer.Length)) > 0)
-                    {
-                        installer.Write(installerBuffer, 0, read);
-                    }
-                    // Save the installer to the disk
-                    UpdateAvailableDialog.Prompt(fileLocation, newerReleases);
-                }
+                // Current version is not up to date, prompt the user to download the new version
+                UpdateAvailableDialog.Prompt(newerReleases[0].Assets[0].Url, newerReleases);
             }
             catch (WebException e)
             {
