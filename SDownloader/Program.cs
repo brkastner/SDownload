@@ -130,7 +130,7 @@ namespace SDownload
                     "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=HCGUGKSBR7XMS";
 
                 _mainMenu = new ContextMenu();
-                _mainMenu.MenuItems.Add("Donate", (sender, eargs) => Process.Start(donateUrl));
+                _mainMenu.MenuItems.Add("Donate", (sender, eargs) => Process.Start("explorer.exe", donateUrl));
                 _mainMenu.MenuItems.Add("Check for Updates", (sender, eargs) => CheckVersion());
                 _mainMenu.MenuItems.Add("Download Chrome Extension", DownloadChromeExtension);
                 _mainMenu.MenuItems.Add("Settings", ShowSettings);
@@ -186,7 +186,7 @@ namespace SDownload
                                      ResponseCallback = result =>
                                                             {
                                                                 if (result)
-                                                                    Process.Start("http://www.google.com/chrome");
+                                                                    Process.Start("explorer.exe", "http://www.google.com/chrome");
                                                                 Exit();
                                                             }
                                  };
