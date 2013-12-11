@@ -137,9 +137,9 @@ namespace SDownload
                     "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=HCGUGKSBR7XMS";
 
                 _mainMenu = new ContextMenu();
-                _mainMenu.MenuItems.Add("Donate", (sender, eargs) => Process.Start("explorer.exe", donateUrl));
+                _mainMenu.MenuItems.Add("Donate", (sender, eargs) => OpenUrlInBrowser(donateUrl));
                 _mainMenu.MenuItems.Add("Check for Updates", (sender, eargs) => CheckVersion());
-                _mainMenu.MenuItems.Add("Download Chrome Extension", DownloadChromeExtension);
+                _mainMenu.MenuItems.Add("Download Chrome Extension", (sender, eargs) => OpenUrlInBrowser(ChromeDownloadUrl));
                 _mainMenu.MenuItems.Add("Settings", ShowSettings);
                 _mainMenu.MenuItems.Add("Exit", ConfirmExitApplication);
 
@@ -193,6 +193,15 @@ namespace SDownload
         }
 
         /// <summary>
+        /// Opens a url in Chrome
+        /// </summary>
+        /// <param name="url">The url to browse to</param>
+        private void OpenUrlInBrowser(String url)
+        {
+            Process.Start("chrome", url);
+        }
+
+        /// <summary>
         /// Check for a Google Chrome installation and make sure the helper
         /// extension is installed
         /// </summary>
@@ -208,7 +217,7 @@ namespace SDownload
                                      ResponseCallback = result =>
                                                             {
                                                                 if (result)
-                                                                    Process.Start("explorer.exe", "http://www.google.com/chrome");
+                                                                    OpenUrlInBrowser("http://www.google.com/chrome");
                                                                 Exit();
                                                             }
                                  };
@@ -236,7 +245,7 @@ namespace SDownload
                     ResponseCallback = result =>
                     {
                         if (result)
-                            DownloadChromeExtension(null, null);
+                            OpenUrlInBrowser(ChromeDownloadUrl);
                         else
                             Exit();
                     }
@@ -294,17 +303,6 @@ namespace SDownload
             {
                 HandledException.Throw("Unable to make a connection to the SDownload API to check for updates!", e);
             }
-        }
-
-        /// <summary>
-        /// Opens the Chrome browser to the page to download the chrome extension
-        /// </summary>
-        /// <param name="sender">Not used</param>
-        /// <param name="eventArgs">Not used</param>
-        private void DownloadChromeExtension(object sender, EventArgs eventArgs)
-        {
-            // Open chrome and redirect to the extension download page
-            Process.Start("chrome", ChromeDownloadUrl);
         }
 
         /// <summary>
