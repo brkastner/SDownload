@@ -7,11 +7,15 @@ $(function () {
         $(".listenContent .sound.single").not(".playlist").not(".sd-added").each(function() {
 
             var self = $(this);
-            self.addClass("sd-added");
 
             var buttonGroup = self.find(".sc-button-group").first();
+            
+            // return if button exists
+            if (buttonGroup.find(".sdownload-button").length > 0)
+                return;
 
             var downloadButton = $("<button>").addClass("sc-button").addClass("sc-button-medium").addClass("sc-button-responsive").addClass("sc-button-download");
+            downloadButton.addClass("sdownload-button");
             downloadButton.attr("title", "SDownload");
             downloadButton.html("SDownload");
 
@@ -29,13 +33,18 @@ $(function () {
         });
         
         // Stream
-        $(".sound.streamContext").not(".sdownload-added").each(function () {
+        $(".sound.streamContext").each(function () {
 
             var self = $(this);
 
             var buttonGroup = self.find(".sc-button-group").first();
+            
+            // return if button exists
+            if (buttonGroup.find(".sdownload-button").length > 0)
+                return;
 
             var downloadButton = $("<button>").addClass("sc-button").addClass("sc-button-small").addClass("sc-button-responsive").addClass("sc-button-download");
+          
             downloadButton.attr("title", "SDownload");
             downloadButton.html("SDownload");
 
@@ -46,10 +55,9 @@ $(function () {
                 url = "https://soundcloud.com" + url;
 
                 downloadButton.attr("data", url);
+                downloadButton.addClass("sdownload-button");
 
                 downloadButton.appendTo(buttonGroup);
-
-                self.addClass("sdownload-added");
 
                 downloadButton.on("click", function(event) {
                     event.stopPropagation();
@@ -59,10 +67,15 @@ $(function () {
         });
         
         // Individual songs from a set
-        $(".trackList__item").not(".sdownload-added").each(function () {
+        $(".trackList__item").each(function () {
             var self = $(this);
 
             var buttonGroup = self.find(".sc-button-group-small").first();
+            
+            // return if button exists
+            if (buttonGroup.find(".sdownload-button").length > 0)
+                return;
+            
             var downloadButton = $("<button>").addClass("sc-button").addClass("sc-button-small").addClass("sc-button-responsive").addClass("sc-button-icon").addClass("sc-button-download");
             downloadButton.attr("title", "SDownload");
 
@@ -71,7 +84,7 @@ $(function () {
             if (coverLink != undefined && coverLink.attr("href") != undefined) {
                 var url = "https://soundcloud.com" + coverLink.attr("href").split("?")[0];
                 downloadButton.attr("data", url);
-                self.addClass("sdownload-added");
+                downloadButton.addClass("sdownload-button");
 
                 downloadButton.on("click", function(event) {
                     event.stopPropagation();
