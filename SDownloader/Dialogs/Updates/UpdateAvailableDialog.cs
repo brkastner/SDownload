@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Net;
 using System.Text;
 using System.Windows.Forms;
-using SDownload.Dialogs;
 using SDownload.Framework;
 
 namespace SDownload.Dialogs

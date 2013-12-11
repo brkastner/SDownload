@@ -15,7 +15,7 @@ namespace SDownload.Framework
         /// <summary>
         /// If information can still be sent to the view
         /// </summary>
-        private bool CanSend = true;
+        private bool _canSend = true;
 
         /// <summary>
         /// Report a string to the remote proxy
@@ -24,7 +24,7 @@ namespace SDownload.Framework
         /// <param name="close">Whether to close the connection afterwards or not</param>
         public void Report(String info, bool close = false)
         {
-            if (Remote == null || !CanSend) return;
+            if (Remote == null || !_canSend) return;
 
             try
             {
@@ -34,7 +34,7 @@ namespace SDownload.Framework
             }
             catch (Exception e)
             {
-                CanSend = false;
+                _canSend = false;
                 HandledException.Throw(e.Message, e);
             }
         }
