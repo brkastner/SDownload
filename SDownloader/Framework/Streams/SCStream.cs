@@ -122,6 +122,24 @@ namespace SDownload.Framework.Streams
             MainResource = new DownloadItem(new Uri(GetDownloadUrl()), absoluteUrl);
         }
 
+        private async Task<bool> RetryDownload()
+        {
+            View.Report("Retrying");
+
+            // Manual has already been tried, can't be done
+            if (_forceManual)
+                return false;
+
+            // Set the appropriate method to try next
+            if (_forceStream)
+                _forceManual = true;
+            else
+                _forceStream = true;
+
+            MainResource.Uri = new Uri(GetDownloadUrl());
+            return await Download(true);
+        }
+
         /// <summary>
         /// Downloads the necessary files and handles any exceptions
         /// </summary>
@@ -129,27 +147,32 @@ namespace SDownload.Framework.Streams
         /// <returns>A task representation for keeping track of the method's progress</returns>
         public override async Task<bool> Download(bool ignoreExtras = false)
         {
-            try
+            var result = await base.Download(ignoreExtras);
+            if (!result)
             {
-                var result = await base.Download(ignoreExtras);
-                if (result)
+                // If the last attempt was manual, it's impossible
+                if (_forceManual)
                 {
-                    if (!Validate())
-                        throw new HandledException("The downloaded file does not support editing ID3 tags!");
-                    return true;
-                }
-                return false;
-            }
-            catch (Exception e)
-            {
-                if (e.Message.Contains("Not Found"))
-                {
-                    View.Report("Download impossible!", true);
+                    // Can ignore this being called for every reattempt, view will close and ignore
+                    View.Report("Impossible! :/", true);
+
+                    // Ignore songs that have streaming blocked and can't be downloaded, throw everything else
+                    if (LastException.Message.Contains("401"))
+                    {
+                        View.Report("Impossible! :/", true);
+                    }
+                    else
+                    {
+                        View.Report("Error!", true);
+                        HandledException.Throw("There was an issue downloading the necessary file(s)!",
+                                               LastException);
+                    }
                 }
                 else
-                    HandledException.Throw("There was an issue downloading the necessary file(s)!", e);
-                return false;
+                    result = await RetryDownload();
+
             }
+            return result && await Validate();
         }
 
         /// <summary>
@@ -158,9 +181,10 @@ namespace SDownload.Framework.Streams
         /// TODO: perhaps by reading the resolved url ending rather than assuming mp3 immediately
         /// </summary>
         /// <returns>True if the file was downloaded correctly and can be modified</returns>
-        public override bool Validate()
+        public override async Task<bool> Validate()
         {
             var valid = false;
+            var retry = false;
             SFile file = null;
             try
             {
@@ -178,24 +202,18 @@ namespace SDownload.Framework.Streams
                     File.Move(old, MainResource.AbsolutePath);
                     file = SFile.Create(MainResource.AbsolutePath);
                 }
-                catch (CorruptFileException) // File isn't any supported type
+                catch (CorruptFileException e) // File isn't any supported type
                 {
                     File.Delete(MainResource.AbsolutePath);
-                    // File could not be validated, Use the stream download
-                    View.Report("Retrying");
 
                     // If manual has already been attempted, this isn't possible
-                    if (_forceManual)
-                        return false;
+                    retry = !_forceManual;
 
-                    // Set the appropriate method to try next
-                    if (_forceStream)
-                        _forceManual = true;
-                    else
-                        _forceStream = true;
-
-                    MainResource.Uri = new Uri(GetDownloadUrl());
-                    Download(true);
+                    if (!retry)
+                    {
+                        View.Report("Error!", true);
+                        HandledException.Throw("Unable to download a valid song format for editing!", e);
+                    }
                 }
             }
             finally
@@ -206,6 +224,11 @@ namespace SDownload.Framework.Streams
                     file.Dispose();
                 }
             }
+
+            // Retry the download if necessary
+            if (retry)
+                valid = await RetryDownload();
+
             return valid;
         }
 

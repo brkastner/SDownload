@@ -27,6 +27,8 @@ namespace SDownload.Framework.Streams
         /// </summary>
         protected DownloadItem MainResource;
 
+        protected Exception LastException { get; private set; }
+
         /// <summary>
         /// A list of extras that need to be downloaded with the main resource
         /// </summary>
@@ -80,29 +82,37 @@ namespace SDownload.Framework.Streams
         public virtual async Task<bool> Download(bool ignoreExtras = false)
         {
             View.Report("Downloading");
-            // Download the main resource
-            if (MainResource == null)
+            try
             {
-                HandledException.Throw("No resource has been registered for download!");
-                return false;
+                // Download the main resource
+                if (MainResource == null)
+                {
+                    HandledException.Throw("No resource has been registered for download!");
+                    return false;
+                }
+
+                var mainDownloader = new WebClient();
+                mainDownloader.DownloadProgressChanged += (sender, e) => View.Report(String.Format("{0}%", e.ProgressPercentage));
+                var resourceDownload = mainDownloader.DownloadFileTaskAsync(MainResource.Uri, MainResource.AbsolutePath);
+
+                IEnumerable<Task> extraTasks = null;
+
+                // Download additional files
+                if (!ignoreExtras)
+                    extraTasks = (from extra in Extras select DownloadExtra(extra)).ToList();
+
+                await resourceDownload;
+                var ret = Validate();
+                if (extraTasks != null)
+                    Task.WaitAll(extraTasks.ToArray());
+
+                return await ret;
             }
-
-            var mainDownloader = new WebClient();
-            mainDownloader.DownloadProgressChanged += (sender, e) => View.Report(String.Format("{0}%", e.ProgressPercentage));
-            var resourceDownload = mainDownloader.DownloadFileTaskAsync(MainResource.Uri, MainResource.AbsolutePath);
-
-            IEnumerable<Task> extraTasks = null;
-
-            // Download additional files
-            if (!ignoreExtras)
-                extraTasks = (from extra in Extras select DownloadExtra(extra)).ToList();
-
-            await resourceDownload;
-            var ret = Validate();
-            if (extraTasks != null)
-                Task.WaitAll(extraTasks.ToArray());
-
-            return ret;
+            catch (Exception e)
+            {
+                LastException = e;
+            }
+            return false;
         }
 
         /// <summary>
@@ -119,7 +129,7 @@ namespace SDownload.Framework.Streams
         /// Validates the download. The base stream does not do any validation.
         /// </summary>
         /// <returns></returns>
-        public virtual bool Validate()
+        public virtual async Task<bool> Validate()
         {
             View.Report("Validating");
             return true;
