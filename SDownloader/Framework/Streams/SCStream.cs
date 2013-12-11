@@ -262,9 +262,13 @@ namespace SDownload.Framework.Streams
                 Settings.CustomITunesLocation ?? Environment.GetFolderPath(Environment.SpecialFolder.MyMusic), GetCleanFileName(_title), 
                 MainResource.AbsolutePath.Substring(MainResource.AbsolutePath.Length-3));
 
-            // TODO: Ask the user first
-            if (File.Exists(newdir)) 
-                File.Delete(newdir);
+            if (File.Exists(newdir))
+            {
+                // Insert random string into dest filename as to not overwrite old file
+                var endingIndex = (newdir.Length - 1) - 4;
+                var ending = newdir.Substring(endingIndex);
+                newdir = newdir.Remove(endingIndex) + GenerateRandomString(3) + ending;
+            }
 
             try
             {
