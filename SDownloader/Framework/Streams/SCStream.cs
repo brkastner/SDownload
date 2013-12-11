@@ -73,6 +73,11 @@ namespace SDownload.Framework.Streams
             _origUrl = url;
             View = view;
 
+            // Sets are not currently supported
+            // TODO: API supports downloading a single stream URL (like a mix), add support
+            if (url.Contains(@"/sets/"))
+                throw new HandledException("Downloading sets is not currently supported! Try downloading each individual song.");
+
             const String resolveUrl = "http://api.soundcloud.com/resolve?url={0}&client_id={1}";
             var request = (HttpWebRequest)WebRequest.Create(String.Format(resolveUrl, url, Clientid));
             request.Method = WebRequestMethods.Http.Get;
@@ -80,7 +85,8 @@ namespace SDownload.Framework.Streams
             var response = request.GetResponse().GetResponseStream();
             if (response == null)
                 throw new HandledException("Soundcloud API failed to respond! This could due to an issue with your connection.");
-            _trackData = new DataContractJsonSerializer(typeof(TrackData)).ReadObject(response) as TrackData;
+
+            _trackData = new DataContractJsonSerializer(typeof (TrackData)).ReadObject(response) as TrackData;
 
             if (_trackData == null)
                 throw new HandledException("Downloaded track information was corrupted!", true);
