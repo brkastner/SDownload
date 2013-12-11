@@ -73,21 +73,14 @@ namespace SDownload.Framework.Streams
             _origUrl = url;
             View = view;
 
-            try
-            {
-                const String resolveUrl = "http://api.soundcloud.com/resolve?url={0}&client_id={1}";
-                var request = (HttpWebRequest)WebRequest.Create(String.Format(resolveUrl, url, Clientid));
-                request.Method = WebRequestMethods.Http.Get;
-                request.Accept = "application/json";
-                var response = request.GetResponse().GetResponseStream();
-                if (response == null)
-                    throw new HandledException("Soundcloud API failed to respond! This could due to an issue with your connection.");
-                _trackData = new DataContractJsonSerializer(typeof(TrackData)).ReadObject(response) as TrackData;
-            }
-            catch (Exception e)
-            {
-                HandledException.Throw("There was an issue connecting to the Soundcloud API.", e);
-            }
+            const String resolveUrl = "http://api.soundcloud.com/resolve?url={0}&client_id={1}";
+            var request = (HttpWebRequest)WebRequest.Create(String.Format(resolveUrl, url, Clientid));
+            request.Method = WebRequestMethods.Http.Get;
+            request.Accept = "application/json";
+            var response = request.GetResponse().GetResponseStream();
+            if (response == null)
+                throw new HandledException("Soundcloud API failed to respond! This could due to an issue with your connection.");
+            _trackData = new DataContractJsonSerializer(typeof(TrackData)).ReadObject(response) as TrackData;
 
             if (_trackData == null)
                 throw new HandledException("Downloaded track information was corrupted!", true);

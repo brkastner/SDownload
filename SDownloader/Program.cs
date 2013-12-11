@@ -5,7 +5,6 @@ using System.Net;
 using System.Reflection;
 using System.Runtime.Serialization.Json;
 using System.Threading;
-using System.Threading.Tasks;
 using Alchemy;
 using System;
 using System.Windows.Forms;
@@ -60,8 +59,6 @@ namespace SDownload
         private const String ChromeDownloadUrl =
             "https://chrome.google.com/webstore/detail/sdownload/dkflmdcolphnomonabinogaegbjbnbbm";
 
-        private delegate void CheckVersionDelegate();
-
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
@@ -87,15 +84,23 @@ namespace SDownload
         /// <param name="view">The view to report progress back to</param>
         private static async void DownloadUrl(String url, InfoReportProxy view)
         {
-            var sound = new SCStream(url, view);
-            var download = sound.Download();
+            try
+            {
+                var sound = new SCStream(url, view);
+                var download = sound.Download();
 
-            // Log the song genre to see how SDownload is used
-            if (sound.Genre != null && !sound.Genre.Equals(String.Empty))
-                BugSenseHandler.Instance.SendEvent(sound.Genre);
+                // Log the song genre to see how SDownload is used
+                if (sound.Genre != null && !sound.Genre.Equals(String.Empty))
+                    BugSenseHandler.Instance.SendEvent(sound.Genre);
 
-            if (download != null && await download)
-                sound.Finish();
+                if (download != null && await download)
+                    sound.Finish();
+            }
+            catch (Exception e)
+            {
+                HandledException.Throw("There was an issue downloading the stream!", e);
+            }
+            
         }
 
         /// <summary>
