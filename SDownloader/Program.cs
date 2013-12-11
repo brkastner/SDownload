@@ -162,6 +162,9 @@ namespace SDownload
             }
         }
 
+        /// <summary>
+        /// Set up the listening server
+        /// </summary>
         private void SetupListener()
         {
             _listener = new WebSocketServer(7030, IPAddress.Parse("127.0.0.1"));
@@ -174,7 +177,14 @@ namespace SDownload
                 if (Settings.CheckForUpdates)
                     CheckVersion();
             };
-            _listener.Start();
+            try
+            {
+                _listener.Start();
+            }
+            catch(Exception e)
+            {
+                HandledException.Throw("There was an issue listening for downloads! Make sure your firewall is not blocking this application", e);
+            }
         }
 
         /// <summary>
@@ -201,6 +211,7 @@ namespace SDownload
                 return;
             }
 
+            // Parse for the text file signifying the extension is installed
             var extensionFolder = from extension in Directory.EnumerateDirectories(extensionPath)
                                   where
                                       (from version in Directory.EnumerateDirectories(extension)
