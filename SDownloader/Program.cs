@@ -97,7 +97,7 @@ namespace SDownload
         {
             try
             {
-                var sound = new SCStream(url, view);
+                var sound = new SCTrackStream(url, view);
                 var download = sound.Download();
 
                 // Log the song genre to see how SDownload is used

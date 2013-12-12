@@ -9,7 +9,7 @@ namespace SDownload.Framework.Models
     /// <see cref="http://developers.soundcloud.com/docs/api/reference#tracks"/>
     /// </summary>
     [DataContract]
-    public class TrackData
+    public class SCTrackData
     {
         [DataMember(Name = "id")]
         internal int Id;

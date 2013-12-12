@@ -92,7 +92,7 @@ namespace SDownload.Framework.Streams
                 }
 
                 var mainDownloader = new WebClient();
-                mainDownloader.DownloadProgressChanged += (sender, e) => View.Report(String.Format("{0}%", e.ProgressPercentage));
+                mainDownloader.DownloadProgressChanged += (sender, e) => View.UpdateProgress(e.ProgressPercentage);
                 var resourceDownload = mainDownloader.DownloadFileTaskAsync(MainResource.Uri, MainResource.AbsolutePath);
 
                 IEnumerable<Task> extraTasks = null;

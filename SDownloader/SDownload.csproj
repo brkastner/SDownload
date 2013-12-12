@@ -140,12 +140,12 @@
     <Compile Include="Dialogs\SettingsForm.Designer.cs">
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Framework\Streams\SCStream.cs" />
+    <Compile Include="Framework\Streams\SCTrackStream.cs" />
     <Compile Include="Program.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Framework\Models\TrackData.cs" />
+    <Compile Include="Framework\Models\SCTrackData.cs" />
     <EmbeddedResource Include="Dialogs\Updates\DownloadProgressDialog.resx">
       <DependentUpon>DownloadProgressDialog.cs</DependentUpon>
     </EmbeddedResource>
@@ -203,6 +203,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="sdownload.ico" />
     <None Include="Resources\Logo500x500.bmp" />
     <None Include="Resources\logo500x500.png" />
     <None Include="Resources\logo_tight.png" />
@@ -216,7 +217,6 @@
     <Content Include="Extensions\Chrome\sdownload.txt" />
     <Content Include="Extensions\Firefox\chrome\content\sample.xml" />
     <None Include="Resources\logo_with_text.png" />
-    <Content Include="sdownload.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

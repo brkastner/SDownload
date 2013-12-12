@@ -21,7 +21,7 @@ namespace SDownload.Framework.Streams
     /// <summary>
     /// Represents a Song file downloaded from SoundCloud
     /// </summary>
-    public class SCStream : BaseStream
+    public class SCTrackStream : BaseStream
     {
         /// <summary>
         /// The API client ID for SDownload
@@ -31,7 +31,7 @@ namespace SDownload.Framework.Streams
         /// <summary>
         /// The JSON response containing all of the track's data from the API
         /// </summary>
-        private readonly TrackData _trackData;
+        private readonly SCTrackData _trackData;
 
         /// <summary>
         /// The title of the song
@@ -69,15 +69,16 @@ namespace SDownload.Framework.Streams
         /// <param name="url">The URL to the individual song</param>
         /// <param name="view">The connection associated with the browser extension</param>
         /// <returns>A Sound representation of the remote resource</returns>
-        public SCStream(String url, InfoReportProxy view) : base(url, view)
+        public SCTrackStream(String url, InfoReportProxy view) : base(url, view)
         {
             _origUrl = url;
             View = view;
 
-            // Sets are not currently supported
-            // TODO: API supports downloading a single stream URL (like a mix), add support
+            // Break sets apart and download each individual song
             if (url.Contains(@"/sets/"))
-                throw new HandledException("Downloading sets is not currently supported! Try downloading each individual song.");
+            {
+
+            }
 
             const String resolveUrl = "http://api.soundcloud.com/resolve?url={0}&client_id={1}";
             var request = (HttpWebRequest)WebRequest.Create(String.Format(resolveUrl, url, Clientid));
@@ -87,7 +88,7 @@ namespace SDownload.Framework.Streams
             if (response == null)
                 throw new HandledException("Soundcloud API failed to respond! This could due to an issue with your connection.");
 
-            _trackData = new DataContractJsonSerializer(typeof (TrackData)).ReadObject(response) as TrackData;
+            _trackData = new DataContractJsonSerializer(typeof (SCTrackData)).ReadObject(response) as SCTrackData;
 
             if (_trackData == null)
                 throw new HandledException("Downloaded track information was corrupted!", true);

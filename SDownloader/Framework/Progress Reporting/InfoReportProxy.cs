@@ -18,11 +18,20 @@ namespace SDownload.Framework
         private bool _canSend = true;
 
         /// <summary>
+        /// Reports the current progress to the remote proxy
+        /// </summary>
+        /// <param name="percentage">The percentage completed</param>
+        public virtual void UpdateProgress(int percentage)
+        {
+            Report(String.Format("{0}%", percentage));
+        }
+
+        /// <summary>
         /// Report a string to the remote proxy
         /// </summary>
         /// <param name="info">The information to send</param>
         /// <param name="close">Whether to close the connection afterwards or not</param>
-        public void Report(String info, bool close = false)
+        public virtual void Report(String info, bool close = false)
         {
             if (Remote == null || !_canSend) return;
 

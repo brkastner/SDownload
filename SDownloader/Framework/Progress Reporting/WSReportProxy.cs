@@ -12,7 +12,7 @@ namespace SDownload
         /// <summary>
         /// The Websocket context
         /// </summary>
-        private readonly UserContext _context;
+        internal readonly UserContext Context;
 
         /// <summary>
         /// Creates a report proxy that can send information to a
@@ -23,7 +23,7 @@ namespace SDownload
         {
             if (context == null) return;
 
-            _context = context;
+            Context = context;
             Remote = WSReport;
         }
 
@@ -36,7 +36,7 @@ namespace SDownload
         {
             try
             {
-                _context.Send(info);
+                Context.Send(info);
             }
             catch (Exception e)
             {
