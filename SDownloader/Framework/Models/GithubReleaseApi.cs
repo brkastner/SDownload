@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace SDownload.Framework
+namespace SDownload.Framework.Models
 {
     #pragma warning disable
     /// <summary>

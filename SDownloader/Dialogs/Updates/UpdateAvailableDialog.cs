@@ -5,6 +5,7 @@ using System.IO;
 using System.Text;
 using System.Windows.Forms;
 using SDownload.Framework;
+using SDownload.Framework.Models;
 
 namespace SDownload.Dialogs
 {

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using BugSense;
 using SDownload.Dialogs;
+using SDownload.Framework.Models;
 using TagLib;
 using File = System.IO.File;
 using SFile = TagLib.File;

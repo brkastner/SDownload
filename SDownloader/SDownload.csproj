@@ -124,7 +124,7 @@
       <DependentUpon>UpdateAvailableDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Framework\Streams\BaseStream.cs" />
-    <Compile Include="Framework\GithubReleaseApi.cs" />
+    <Compile Include="Framework\Models\GithubReleaseApi.cs" />
     <Compile Include="Framework\HandledException.cs" />
     <Compile Include="Framework\Progress Reporting\InfoReportProxy.cs" />
     <Compile Include="Framework\Progress Reporting\WSReportProxy.cs" />
@@ -145,7 +145,7 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Framework\TrackData.cs" />
+    <Compile Include="Framework\Models\TrackData.cs" />
     <EmbeddedResource Include="Dialogs\Updates\DownloadProgressDialog.resx">
       <DependentUpon>DownloadProgressDialog.cs</DependentUpon>
     </EmbeddedResource>

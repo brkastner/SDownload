@@ -12,6 +12,7 @@ using BugSense;
 using BugSense.Model;
 using SDownload.Dialogs;
 using SDownload.Framework;
+using SDownload.Framework.Models;
 using SDownload.Framework.Streams;
 using Resources = SDownload.Properties.Resources;
 
