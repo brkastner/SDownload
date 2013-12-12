@@ -54,10 +54,20 @@ namespace SDownload
         private const String BugSenseApiKey = "w8c7ad34";
 
         /// <summary>
+        /// URL for downloading the Chrome browser
+        /// </summary>
+        private const String ChromeBrowserDownloadUrl = "http://www.google.com/chrome";
+
+        /// <summary>
         /// URL for downloading the helper extension for Chrome
         /// </summary>
-        private const String ChromeDownloadUrl =
+        private const String ChromeExtensionDownloadUrl =
             "https://chrome.google.com/webstore/detail/sdownload/dkflmdcolphnomonabinogaegbjbnbbm";
+
+        /// <summary>
+        /// URL for donating :)
+        /// </summary>
+        private const String DonateUrl = "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=HCGUGKSBR7XMS";
 
         /// <summary>
         /// The main entry point for the application.
@@ -133,13 +143,10 @@ namespace SDownload
                         DownloadUrl(link, new InfoReportProxy());
                 }
 
-                const String donateUrl =
-                    "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=HCGUGKSBR7XMS";
-
                 _mainMenu = new ContextMenu();
-                _mainMenu.MenuItems.Add("Donate", (sender, eargs) => OpenUrlInBrowser(donateUrl));
+                _mainMenu.MenuItems.Add("Donate", (sender, eargs) => OpenUrlInBrowser(DonateUrl));
                 _mainMenu.MenuItems.Add("Check for Updates", (sender, eargs) => CheckVersion());
-                _mainMenu.MenuItems.Add("Download Chrome Extension", (sender, eargs) => OpenUrlInBrowser(ChromeDownloadUrl));
+                _mainMenu.MenuItems.Add("Download Chrome Extension", (sender, eargs) => OpenUrlInBrowser(ChromeExtensionDownloadUrl));
                 _mainMenu.MenuItems.Add("Settings", ShowSettings);
                 _mainMenu.MenuItems.Add("Exit", ConfirmExitApplication);
 
@@ -217,7 +224,7 @@ namespace SDownload
                                      ResponseCallback = result =>
                                                             {
                                                                 if (result)
-                                                                    OpenUrlInBrowser("http://www.google.com/chrome");
+                                                                    OpenUrlInBrowser(ChromeBrowserDownloadUrl);
                                                                 Exit();
                                                             }
                                  };
@@ -245,7 +252,7 @@ namespace SDownload
                     ResponseCallback = result =>
                     {
                         if (result)
-                            OpenUrlInBrowser(ChromeDownloadUrl);
+                            OpenUrlInBrowser(ChromeExtensionDownloadUrl);
                         else
                             Exit();
                     }
