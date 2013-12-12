@@ -74,11 +74,10 @@ namespace SDownload.Framework.Streams
             _origUrl = url;
             View = view;
 
-            // Break sets apart and download each individual song
+            // Sets are not currently supported
+            // TODO: API supports downloading a single stream URL (like a mix), add support
             if (url.Contains(@"/sets/"))
-            {
-
-            }
+                throw new HandledException("Downloading sets is not currently supported! Try downloading each individual song.");
 
             const String resolveUrl = "http://api.soundcloud.com/resolve?url={0}&client_id={1}";
             var request = (HttpWebRequest)WebRequest.Create(String.Format(resolveUrl, url, Clientid));
