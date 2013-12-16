@@ -43,6 +43,7 @@ namespace SDownload.Dialogs
             this.confirmExitCheckBox = new System.Windows.Forms.CheckBox();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.checkForUpdates = new System.Windows.Forms.CheckBox();
+            this.betaCheckBox = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -152,11 +153,22 @@ namespace SDownload.Dialogs
             this.checkForUpdates.Text = "Automatically check for updates";
             this.checkForUpdates.UseVisualStyleBackColor = true;
             // 
+            // betaCheckBox
+            // 
+            this.betaCheckBox.AutoSize = true;
+            this.betaCheckBox.Location = new System.Drawing.Point(265, 221);
+            this.betaCheckBox.Name = "betaCheckBox";
+            this.betaCheckBox.Size = new System.Drawing.Size(124, 17);
+            this.betaCheckBox.TabIndex = 11;
+            this.betaCheckBox.Text = "Enable beta updates";
+            this.betaCheckBox.UseVisualStyleBackColor = true;
+            // 
             // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(495, 287);
+            this.Controls.Add(this.betaCheckBox);
             this.Controls.Add(this.checkForUpdates);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.confirmExitCheckBox);
@@ -193,5 +205,6 @@ namespace SDownload.Dialogs
         private System.Windows.Forms.CheckBox confirmExitCheckBox;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.CheckBox checkForUpdates;
+        private System.Windows.Forms.CheckBox betaCheckBox;
     }
 }

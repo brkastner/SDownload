@@ -118,5 +118,17 @@ namespace SDownload.Properties {
                 this["FirstRun"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool EnableBetaUpdates {
+            get {
+                return ((bool)(this["EnableBetaUpdates"]));
+            }
+            set {
+                this["EnableBetaUpdates"] = value;
+            }
+        }
     }
 }

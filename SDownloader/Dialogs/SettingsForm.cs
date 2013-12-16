@@ -48,6 +48,9 @@ namespace SDownload.Dialogs
             // Check for Updates
             checkForUpdates.Checked = Settings.CheckForUpdates;
 
+            // Beta Updates
+            betaCheckBox.Checked = Settings.EnableBetaUpdates;
+
             // Save Settings
             saveBtn.Click += (sender, args) =>
                                  {
@@ -65,6 +68,7 @@ namespace SDownload.Dialogs
                                      Settings.UseDownloadLink = useDownloadLink.Checked;
                                      Settings.ConfirmExit = confirmExitCheckBox.Checked;
                                      Settings.CheckForUpdates = checkForUpdates.Checked;
+                                     Settings.EnableBetaUpdates = betaCheckBox.Checked;
 
                                      Close();
                                  };

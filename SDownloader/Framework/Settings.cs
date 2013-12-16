@@ -1,7 +1,6 @@
 ﻿using System;
 using Storage = SDownload.Properties.Settings;
 
-
 namespace SDownload.Framework
 {
     /// <summary>
@@ -9,6 +8,19 @@ namespace SDownload.Framework
     /// </summary>
     public static class Settings
     {
+        /// <summary>
+        /// If beta updates should be considered when updating
+        /// </summary>
+        public static bool EnableBetaUpdates
+        {
+            get { return Storage.Default.EnableBetaUpdates; }
+            set 
+            { 
+                Storage.Default.EnableBetaUpdates = value;
+                Storage.Default.Save();
+            }
+        }
+
         /// <summary>
         /// Whether or not this is the first time this application has been run
         /// </summary>

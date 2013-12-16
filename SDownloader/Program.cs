@@ -299,10 +299,15 @@ namespace SDownload
                                             Int32.Parse(versionNumbers[1]) > currentVersion[1]) ||
                                             (Int32.Parse(versionNumbers[0]) == currentVersion[0] && // Incremental
                                             Int32.Parse(versionNumbers[1]) == currentVersion[1] &&
-                                            Int32.Parse(versionNumbers[2]) > currentVersion[2])) && !release.Draft
+                                            Int32.Parse(versionNumbers[2]) > currentVersion[2])) 
+                                            && !release.Draft                                       // Ignore drafts
                                      select release).ToList();
 
                 if (newerReleases.Count < 1) return;
+
+                // Remove beta updates if the option is disabled
+                if (!Settings.EnableBetaUpdates)
+                    newerReleases = (from release in newerReleases where !release.PreRelease select release).ToList();
 
                 // Current version is not up to date, prompt the user to download the new version
                 UpdateAvailableDialog.Prompt(newerReleases[0].Assets[0].Url, newerReleases);
