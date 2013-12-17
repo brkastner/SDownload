@@ -368,10 +368,6 @@ namespace SDownload.Framework.Streams
         {
             var songDownload = (_trackData.DownloadUrl != null && Settings.UseDownloadLink && !_forceStream) ? _trackData.DownloadUrl : _trackData.StreamUrl;
 
-            // Pretend we forced stream, so on failure we attempt manual next
-            if (songDownload.Equals(_trackData.StreamUrl))
-                _forceStream = true;
-
             if (songDownload == null || _forceManual)
             {
                 // There was no stream URL or download URL for the song, manually parse the resource stream link from the original URL
@@ -398,6 +394,10 @@ namespace SDownload.Framework.Streams
                 var links = Regex.Matches(searchString, "((http:[/][/])(media.soundcloud.com/stream/)([a-z]|[A-Z]|[0-9]|[/.]|[~]|[?]|[_]|[=])*)");
                 songDownload = links[0].Value;
             }
+
+            // Pretend we forced stream, so on failure we attempt manual next
+            if (songDownload.Equals(_trackData.StreamUrl))
+                _forceStream = true;
 
             return songDownload + "?client_id=" + Clientid;
         }
