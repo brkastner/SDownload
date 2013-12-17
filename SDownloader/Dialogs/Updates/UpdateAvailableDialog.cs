@@ -83,7 +83,7 @@ namespace SDownload.Dialogs
         /// <param name="contracts">The response received from the SDownload regarding the new version</param>
         public static void Prompt(String fileUrl, List<GithubReleaseItemContract> contracts)
         {
-            if (_form == null)
+            if (_form == null || _form.IsDisposed)
                 _form = new UpdateAvailableDialog(fileUrl, contracts);
 
             _form.Show();
