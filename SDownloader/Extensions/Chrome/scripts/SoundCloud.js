@@ -106,8 +106,10 @@ $(function () {
 
             if (songHref && songHref.length > 0) {
                 var server = new WebSocket("ws://localhost:7030");
+                var opened = false;
                 // Connection to helper application sucessful
                 server.onopen = function () {
+                    opened = true;
                     $(target).html("Processing");
                     server.send(songHref);
                     logDownload();
@@ -115,9 +117,13 @@ $(function () {
 
                 // Helper application was not running
                 server.onerror = function () {
-                    window.location = "sdownload://" + songHref;
-                    $(target).html("Sent to Application!");
-                    logDownload();
+                    if (!opened) {
+                        window.location = "sdownload://" + songHref;
+                        $(target).html("Sent to Application!");
+                        logDownload();
+                    } else {
+                        $(target).html("Error!");
+                    }
                 };
 
                 // Message was received from the helper extension
