@@ -196,6 +196,7 @@ namespace SDownload
             }
             catch(Exception e)
             {
+                BugSenseHandler.Instance.LeaveBreadCrumb("Listener was not able to be started!");
                 HandledException.Throw("There was an issue listening for downloads! Make sure your firewall is not blocking this application", e);
                 Application.Exit();
             }
