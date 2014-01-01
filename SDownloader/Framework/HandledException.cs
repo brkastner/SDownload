@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Globalization;
+using System.Threading;
 using BugSense;
 using SDownload.Dialogs;
 
@@ -34,6 +36,8 @@ namespace SDownload.Framework
         /// <param name="canReport">If the crash should be allowed to be reported to Bugsense</param>
         public static void Throw(String message, Exception inner, bool canReport = true)
         {
+            Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture("en-US"); 
+            Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-US");
             var handled = inner as HandledException;
             var criticalHandled = handled != null && handled.IsCritical;
             // Use the exception message if it is of type HandledException or a message wasn't passed through
