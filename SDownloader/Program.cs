@@ -182,18 +182,18 @@ namespace SDownload
         /// </summary>
         private void SetupListener()
         {
-            _listener = new WebSocketServer(7030, IPAddress.Parse("127.0.0.1"));
-            _listener.OnReceive += context =>
-            {
-                var data = context.DataFrame.ToString();
-                DownloadUrl(data, new WSReportProxy(context));
-
-                // Check for updates after the song has already started downloading
-                if (Settings.CheckForUpdates)
-                    CheckVersion();
-            };
             try
             {
+                _listener = new WebSocketServer(7030, IPAddress.Parse("127.0.0.1"));
+                _listener.OnReceive += context =>
+                {
+                    var data = context.DataFrame.ToString();
+                    DownloadUrl(data, new WSReportProxy(context));
+
+                    // Check for updates after the song has already started downloading
+                    if (Settings.CheckForUpdates)
+                        CheckVersion();
+                };
                 _listener.Start();
             }
             catch(Exception e)
