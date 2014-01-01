@@ -229,7 +229,7 @@ namespace SDownload
                                      ResponseCallback = result =>
                                                             {
                                                                 if (result)
-                                                                    OpenUrlInBrowser(ChromeBrowserDownloadUrl);
+                                                                    Process.Start("explorer.exe", ChromeBrowserDownloadUrl);
                                                                 Exit();
                                                             }
                                  };
