@@ -210,7 +210,22 @@ namespace SDownload
         /// <param name="url">The url to browse to</param>
         private void OpenUrlInBrowser(String url)
         {
-            Process.Start("chrome", url);
+            try
+            {
+                Process.Start("chrome", url);
+            }
+            catch (Exception)
+            {
+                try
+                {
+
+                    Process.Start("explorer.exe", url);
+                }
+                catch (Exception e)
+                {
+                    HandledException.Throw("There was an issue opening your browser! You can try manually navigating to " + url, e);
+                }
+            }
         }
 
         /// <summary>
@@ -229,7 +244,7 @@ namespace SDownload
                                      ResponseCallback = result =>
                                                             {
                                                                 if (result)
-                                                                    Process.Start("explorer.exe", ChromeBrowserDownloadUrl);
+                                                                    OpenUrlInBrowser(ChromeBrowserDownloadUrl);
                                                                 Exit();
                                                             }
                                  };
