@@ -101,8 +101,10 @@ namespace SDownload
                 var download = sound.Download();
 
                 // Log the song genre to see how SDownload is used
+                /* Don't log events until the bugsense issue is fixed 
                 if (sound.Genre != null && !sound.Genre.Equals(String.Empty))
-                    BugSenseHandler.Instance.SendEvent(sound.Genre);
+                    BugSenseHandler.Instance.SendEvent(sound.Genre); 
+                 */
 
                 if (download != null && await download)
                     sound.Finish();
