@@ -104,7 +104,7 @@ namespace SDownload.Framework.Streams
                 await resourceDownload;
                 var ret = Validate();
                 if (extraTasks != null)
-                    Task.WaitAll(extraTasks.ToArray());
+                    foreach (var extra in extraTasks) await extra;
 
                 return await ret;
             }
@@ -120,7 +120,7 @@ namespace SDownload.Framework.Streams
         /// </summary>
         /// <param name="item">The item to download</param>
         /// <returns>A task representation of the asynchronous call</returns>
-        private async Task DownloadExtra(DownloadItem item)
+        private static async Task DownloadExtra(DownloadItem item)
         {
             await new WebClient().DownloadFileTaskAsync(item.Uri, item.AbsolutePath);
         }
