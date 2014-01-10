@@ -64,7 +64,14 @@ namespace SDownload.Dialogs
             if (downloader.Download(fileLocation))
             {
                 // Launch the installer and close the running instance
-                Process.Start(fileLocation);
+                try
+                {
+                    Process.Start(fileLocation);
+                } 
+                catch (Exception e)
+                {
+                    HandledException.Throw("There was an issue launching the update! You'll need to manually start the file: " + fileLocation, false);
+                }
                 Close();
                 Application.Exit();
             }
