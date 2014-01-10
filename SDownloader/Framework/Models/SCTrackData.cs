@@ -5,7 +5,17 @@ namespace SDownload.Framework.Models
 {
     #pragma warning disable
     /// <summary>
-    /// Soundcloud API response
+    /// Soundcloud API response for a set, only the tracklisting is used
+    /// </summary>
+    [DataContract]
+    public class SCPlaylistData
+    {
+        [DataMember(Name = "tracks")]
+        internal SCTrackData[] Tracks;
+    }
+
+    /// <summary>
+    /// Soundcloud API response for a track
     /// <see cref="http://developers.soundcloud.com/docs/api/reference#tracks"/>
     /// </summary>
     [DataContract]

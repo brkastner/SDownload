@@ -81,7 +81,7 @@ namespace SDownload.Framework.Streams
         /// </summary>
         public virtual async Task<bool> Download(bool ignoreExtras = false)
         {
-            View.Report("Downloading");
+            View.Report("Downloading...");
             try
             {
                 // Download the main resource
@@ -141,12 +141,13 @@ namespace SDownload.Framework.Streams
         /// 
         /// If this method is overridden, base.Finish() should be called AT THE END of the function.
         /// </summary>
-        public virtual void Finish()
+        public virtual bool Finish(bool close = true)
         {
-            View.Report("Done!", true);
+            View.Report("Done!", close);
 
             BugSenseHandler.Instance.ClearCrashExtraData();
             BugSenseHandler.Instance.ClearBreadCrumbs();
+            return true;
         }
 
         /// <summary>

@@ -89,34 +89,6 @@ namespace SDownload
         }
 
         /// <summary>
-        /// Parse the given link and send it to the appropriate stream downloader
-        /// </summary>
-        /// <param name="url">The link provided to the application from the view</param>
-        /// <param name="view">The view to report progress back to</param>
-        private static async void DownloadUrl(String url, InfoReportProxy view)
-        {
-            try
-            {
-                var sound = new SCTrackStream(url, view);
-                var download = sound.Download();
-
-                // Log the song genre to see how SDownload is used
-                /* Don't log events until the bugsense issue is fixed 
-                if (sound.Genre != null && !sound.Genre.Equals(String.Empty))
-                    BugSenseHandler.Instance.SendEvent(sound.Genre); 
-                 */
-
-                if (download != null && await download)
-                    sound.Finish();
-            }
-            catch (Exception e)
-            {
-                HandledException.Throw("There was an issue downloading the stream!", e);
-            }
-            
-        }
-
-        /// <summary>
         /// Set up the helper service and check for extension installation and updates
         /// </summary>
         /// <param name="args"></param>
@@ -143,7 +115,7 @@ namespace SDownload
                 {
                     var link = args[0].Contains("sdownload://") ? args[0].Substring(12) : args[0];
                     if (!link.StartsWith("launch"))
-                        DownloadUrl(link, new InfoReportProxy());
+                        SCTrackStream.DownloadTrack(link, new InfoReportProxy());
                 }
 
                 _mainMenu = new ContextMenu();
@@ -188,7 +160,7 @@ namespace SDownload
                 _listener.OnReceive += context =>
                 {
                     var data = context.DataFrame.ToString();
-                    DownloadUrl(data, new WSReportProxy(context));
+                	SCTrackStream.DownloadTrack(data, new WSReportProxy(context));
 
                     // Check for updates after the song has already started downloading
                     if (Settings.CheckForUpdates)

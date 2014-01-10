@@ -4,7 +4,7 @@ $(function () {
     function addDownloadButton() {
 
         // Single Song
-        $(".listenContent .sound.single").not(".playlist").not(".sd-added").each(function() {
+        $(".listenContent .sound.single").each(function() {
 
             var self = $(this);
 

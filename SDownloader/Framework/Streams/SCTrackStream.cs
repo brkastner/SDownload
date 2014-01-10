@@ -26,7 +26,7 @@ namespace SDownload.Framework.Streams
         /// <summary>
         /// The API client ID for SDownload
         /// </summary>
-        private const String Clientid = "4515286ec9d4ace678140c3f84357b35";
+        public const String Clientid = "4515286ec9d4ace678140c3f84357b35";
 
         /// <summary>
         /// The JSON response containing all of the track's data from the API
@@ -64,33 +64,65 @@ namespace SDownload.Framework.Streams
         private bool _forceManual;
 
         /// <summary>
+        /// Parse the given link and send it to the appropriate stream downloader
+        /// </summary>
+        /// <param name="url">The link provided to the application from the view</param>
+        /// <param name="view">The view to report progress back to</param>
+        /// <param name="trackData">Track data from the API if it has already been downloaded</param>
+        public static async Task<bool> DownloadTrack(String url, InfoReportProxy view, SCTrackData trackData = null)
+        {
+            try
+            {
+                BaseStream sound;
+                if (url.Contains(@"/sets/"))
+                    sound = new SCSetStream(url, view);
+                else
+                    sound = new SCTrackStream(url, view, trackData);
+
+                var download = sound.Download();
+
+                if (download != null && await download)
+                    sound.Finish();
+                else
+                    return false;
+            }
+            catch (Exception e)
+            {
+                HandledException.Throw("There was an issue downloading the stream!", e);
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
         /// Gather and prepare all the necessary information for downloading the actual remote resource
         /// </summary>
         /// <param name="url">The URL to the individual song</param>
         /// <param name="view">The connection associated with the browser extension</param>
+        /// <param name="trackData">Track data from the API if it has already been downloaded</param>
         /// <returns>A Sound representation of the remote resource</returns>
-        public SCTrackStream(String url, InfoReportProxy view) : base(url, view)
+        public SCTrackStream(String url, InfoReportProxy view, SCTrackData trackData = null) : base(url, view)
         {
+            _trackData = trackData;
             _origUrl = url;
             View = view;
 
-            // Sets are not currently supported
-            // TODO: API supports downloading a single stream URL (like a mix), add support
-            if (url.Contains(@"/sets/"))
-                throw new HandledException("Downloading sets is not currently supported! Try downloading each individual song.");
-
-            const String resolveUrl = "http://api.soundcloud.com/resolve?url={0}&client_id={1}";
-            var request = (HttpWebRequest)WebRequest.Create(String.Format(resolveUrl, url, Clientid));
-            request.Method = WebRequestMethods.Http.Get;
-            request.Accept = "application/json";
-            var response = request.GetResponse().GetResponseStream();
-            if (response == null)
-                throw new HandledException("Soundcloud API failed to respond! This could due to an issue with your connection.");
-
-            _trackData = new DataContractJsonSerializer(typeof (SCTrackData)).ReadObject(response) as SCTrackData;
-
+            // Load the track data if it wasn't already provided
             if (_trackData == null)
-                throw new HandledException("Downloaded track information was corrupted!", true);
+            {
+                const String resolveUrl = "http://api.soundcloud.com/resolve?url={0}&client_id={1}";
+                var request = (HttpWebRequest) WebRequest.Create(String.Format(resolveUrl, url, Clientid));
+                request.Method = WebRequestMethods.Http.Get;
+                request.Accept = "application/json";
+                var response = request.GetResponse().GetResponseStream();
+                if (response == null)
+                    throw new HandledException(
+                        "Soundcloud API failed to respond! This could due to an issue with your connection.");
+
+                _trackData = new DataContractJsonSerializer(typeof (SCTrackData)).ReadObject(response) as SCTrackData;
+                if (_trackData == null)
+                    throw new HandledException("Downloaded track information was corrupted!", true);
+            }
 
             var tokens = WebUtility.HtmlDecode(_trackData.Title).Split('-');
             _author = _trackData.User.Username;
@@ -117,7 +149,6 @@ namespace SDownload.Framework.Streams
             var artworkUrl = _trackData.ArtworkUrl ?? _trackData.User.AvatarUrl;
 
             Extras = new List<DownloadItem> { new DownloadItem(new Uri(artworkUrl), Path.GetTempPath() + rand + ".jpg") };
-
 
             MainResource = new DownloadItem(new Uri(GetDownloadUrl()), absoluteUrl);
         }
@@ -235,7 +266,7 @@ namespace SDownload.Framework.Streams
         /// <summary>
         /// Updates the ID3 tags for the song file, then moves it into iTunes if the setting is enabled.
         /// </summary>
-        public override void Finish()
+        public override bool Finish(bool close = true)
         {
             View.Report("Finalizing");
             try
@@ -248,10 +279,15 @@ namespace SDownload.Framework.Streams
                 // Should have been handled already
                 View.Report("Invalid file!", true);
                 HandledException.Throw("Invalid file was downloaded!", e);
-                return;
+                return false;
             }
 
-            base.Finish();
+            // Log the song genre to see how SDownload is used
+            if (Genre != null && !Genre.Equals(String.Empty))
+                BugSenseHandler.Instance.SendEventAsync(Genre);
+
+            base.Finish(close);
+            return true;
         }
         
         /// <summary>
