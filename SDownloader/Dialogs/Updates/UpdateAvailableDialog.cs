@@ -43,7 +43,7 @@ namespace SDownload.Dialogs
             foreach (var release in contracts)
             {
                 sb.AppendLine(release.Name + "\r\n---------");
-                sb.AppendLine(release.Body + "\r\n");
+                sb.AppendLine(release.Body.Replace("-F", "-").Replace("-N", "-") + "\r\n");
             }
             changeLogBox.Text = sb.ToString();
 
