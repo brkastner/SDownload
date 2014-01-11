@@ -69,7 +69,7 @@ namespace SDownload.Framework.Streams
         /// <param name="url">The link provided to the application from the view</param>
         /// <param name="view">The view to report progress back to</param>
         /// <param name="trackData">Track data from the API if it has already been downloaded</param>
-        public static async Task<bool> DownloadTrack(String url, InfoReportProxy view, SCTrackData trackData = null)
+        public static async void DownloadTrack(String url, InfoReportProxy view, SCTrackData trackData = null)
         {
             try
             {
@@ -83,15 +83,11 @@ namespace SDownload.Framework.Streams
 
                 if (download != null && await download)
                     sound.Finish();
-                else
-                    return false;
             }
             catch (Exception e)
             {
                 HandledException.Throw("There was an issue downloading the stream!", e);
-                return false;
             }
-            return true;
         }
 
         /// <summary>

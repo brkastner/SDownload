@@ -115,7 +115,7 @@ namespace SDownload
                 {
                     var link = args[0].Contains("sdownload://") ? args[0].Substring(12) : args[0];
                     if (!link.StartsWith("launch"))
-                        SCTrackStream.DownloadTrack(link, new InfoReportProxy());
+                         SCTrackStream.DownloadTrack(link, new InfoReportProxy());
                 }
 
                 _mainMenu = new ContextMenu();
