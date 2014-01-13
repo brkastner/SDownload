@@ -68,7 +68,7 @@ namespace SDownload.Dialogs
                 {
                     Process.Start(fileLocation);
                 } 
-                catch (Exception e)
+                catch (Exception)
                 {
                     HandledException.Throw("There was an issue launching the update! You'll need to manually start the file: " + fileLocation, false);
                 }

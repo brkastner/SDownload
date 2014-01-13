@@ -294,11 +294,11 @@ namespace SDownload
                                             && !release.Draft                                       // Ignore drafts
                                      select release).ToList();
 
-                if (newerReleases.Count < 1) return;
-
                 // Remove beta updates if the option is disabled
                 if (!Settings.EnableBetaUpdates)
                     newerReleases = (from release in newerReleases where !release.PreRelease select release).ToList();
+
+                if (newerReleases.Count < 1) return;
 
                 // Current version is not up to date, prompt the user to download the new version
                 UpdateAvailableDialog.Prompt(newerReleases[0].Assets[0].Url, newerReleases);
