@@ -387,7 +387,9 @@ namespace SDownload
             if (_settingsForm != null)
                 _settingsForm.Close();
 
-            _listener.Stop();
+            if (_listener != null)
+                _listener.Stop();
+
             base.OnClosing(e);
         }
 
