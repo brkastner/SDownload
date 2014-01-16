@@ -6,6 +6,7 @@ using System.Text;
 using System.Windows.Forms;
 using SDownload.Framework;
 using SDownload.Framework.Models;
+using System.Net;
 
 namespace SDownload.Dialogs
 {
@@ -61,6 +62,12 @@ namespace SDownload.Dialogs
             var downloader = new DownloadProgressDialog(_fileUrl, size);
             var fileLocation = String.Format("{0}\\sdownload_update.exe", Path.GetTempPath());
 
+            try
+            {
+                LogUpdate();
+            }
+            catch (Exception) { }
+
             if (downloader.Download(fileLocation))
             {
                 // Launch the installer and close the running instance
@@ -82,6 +89,25 @@ namespace SDownload.Dialogs
                 Close();
             }
         }
+
+        /// <summary>
+        /// Log the update using Google Analytics
+        /// </summary>
+        private async void LogUpdate()
+        {
+            const String logFormat = "v=1&tid=UA-44166717-4&cid=555&t=event&ec=Downloads&ea=Update&el={0}&ev=1";
+            byte[] dataStream = Encoding.UTF8.GetBytes(String.Format(logFormat, versionNumberLabel.Text));
+            WebRequest webRequest = WebRequest.Create("http://www.google-analytics.com/collect");
+            webRequest.Method = "POST";
+            webRequest.ContentType = "application/x-www-form-urlencoded";
+            webRequest.ContentLength = dataStream.Length;  
+            Stream newStream=webRequest.GetRequestStream();
+            // Send the data.
+            await newStream.WriteAsync(dataStream,0,dataStream.Length);
+            newStream.Close();
+        }
+
+
 
         /// <summary>
         /// Creates an update dialog to prompt the user
