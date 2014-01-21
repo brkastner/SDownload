@@ -112,13 +112,6 @@ namespace SDownload
                 if (Settings.FirstRun)
                     Settings.FirstRun = false;
 
-                if (args.Length > 0)
-                {
-                    var link = args[0].Contains("sdownload://") ? args[0].Substring(12) : args[0];
-                    if (!link.StartsWith("launch"))
-                         SCTrackStream.DownloadTrack(link, new InfoReportProxy());
-                }
-
                 _mainMenu = new ContextMenu();
                 _mainMenu.MenuItems.Add("Donate", (sender, eargs) => OpenUrlInBrowser(DonateUrl));
                 _mainMenu.MenuItems.Add("Check for Updates", (sender, eargs) => CheckVersion());
@@ -127,17 +120,19 @@ namespace SDownload
                 _mainMenu.MenuItems.Add("Exit", ConfirmExitApplication);
 
                 _trayIcon = new NotifyIcon
-                                {
-                                    Text = Resources.ApplicationName,
-                                    Icon = Resources.ApplicationIcon,
-                                    ContextMenu = _mainMenu,
-                                    Visible = true
-                                };
+                {
+                    Text = Resources.ApplicationName,
+                    Icon = Resources.ApplicationIcon,
+                    ContextMenu = _mainMenu,
+                    Visible = true
+                };
 
-                _settingsForm = new SettingsForm
-                                    {
-                                        Visible = false
-                                    }; 
+                if (args.Length > 0)
+                {
+                    var link = args[0].Contains("sdownload://") ? args[0].Substring(12) : args[0];
+                    if (!link.StartsWith("launch"))
+                         SCTrackStream.DownloadTrack(link, new IconReportProxy(_trayIcon));
+                }
 
                 SetupListener();
 

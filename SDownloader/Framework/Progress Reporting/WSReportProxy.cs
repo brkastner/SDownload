@@ -2,7 +2,7 @@
 using Alchemy.Classes;
 using SDownload.Framework;
 
-namespace SDownload
+namespace SDownload.Framework
 {
     /// <summary>
     /// Provides an interface for communicating with a remote websocket client
