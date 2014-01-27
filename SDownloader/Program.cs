@@ -96,7 +96,7 @@ namespace SDownload
         public Program(String[] args)
         {
             // Only start if there isn't an instance already running
-            if (IsAlreadyRunning() && !Settings.FirstRun)
+            if (IsAlreadyRunning())
             {
                 var dialog =
                     new YesNoDialog(
@@ -109,9 +109,6 @@ namespace SDownload
             }
             else
             {
-                if (Settings.FirstRun)
-                    Settings.FirstRun = false;
-
                 _mainMenu = new ContextMenu();
                 _mainMenu.MenuItems.Add("Donate", (sender, eargs) => OpenUrlInBrowser(DonateUrl));
                 _mainMenu.MenuItems.Add("Check for Updates", (sender, eargs) => CheckVersion());

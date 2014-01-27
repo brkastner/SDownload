@@ -22,19 +22,6 @@ namespace SDownload.Framework
         }
 
         /// <summary>
-        /// Whether or not this is the first time this application has been run
-        /// </summary>
-        public static bool FirstRun
-        {
-            get { return Storage.Default.FirstRun; }
-            set 
-            { 
-                Storage.Default.FirstRun = value;
-                Storage.Default.Save();
-            }
-        }
-
-        /// <summary>
         /// The location main resource files should be downloaded to
         /// </summary>
         public static String DownloadFolder
