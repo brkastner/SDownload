@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>BugSense.WF</id>
+    <version>3.6.2.0</version>
+    <title>BugSense plugin for Windows Forms</title>
+    <authors>BugSense</authors>
+    <owners>BugSense</owners>
+    <licenseUrl>https://www.bugsense.com/sdklicense</licenseUrl>
+    <projectUrl>http://www.bugsense.com/docs/windowsforms</projectUrl>
+    <iconUrl>http://www.panicnot.com/image/bugsense-min-in.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>BugSense is the leading crash reporting and quality metrics service for mobile apps. This is the official plugin for Windows Forms.</description>
+    <releaseNotes>Changed networking implementation with HttpClient.</releaseNotes>
+    <copyright>Copyright 2013-14</copyright>
+    <language />
+    <tags>windows forms windowsforms bugsense crash reports quality metrics errors c#</tags>
+    <dependencies>
+      <dependency id="Microsoft.Bcl" />
+      <dependency id="Microsoft.Bcl.Build" />
+      <dependency id="Microsoft.Net.Http" />
+    </dependencies>
+  </metadata>
+</package>
