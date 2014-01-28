@@ -88,16 +88,7 @@ namespace SDownload.Framework.Streams
         /// <param name="view">The view to report progress back to</param>
         public SCSetStream(string url, InfoReportProxy view) : base(url, view)
         {
-            const String resolveUrlFormat = "http://api.soundcloud.com/resolve?url={0}&client_id={1}";
-            var resolveUrl = String.Format(resolveUrlFormat, url, SCTrackStream.Clientid);
-            var request = (HttpWebRequest)WebRequest.Create(resolveUrl);
-            request.Method = WebRequestMethods.Http.Get;
-            request.Accept = "application/json";
-            var response = request.GetResponse().GetResponseStream();
-            if (response == null)
-                throw new HandledException("Soundcloud API failed to respond! This could due to an issue with your connection.");
-
-            var playlistData = new DataContractJsonSerializer(typeof(SCPlaylistData)).ReadObject(response) as SCPlaylistData;
+            var playlistData = SCPlaylistData.LoadData(url);
             if (playlistData == null)
                 throw new HandledException("Downloaded set information was corrupted!", true);
 
@@ -111,7 +102,7 @@ namespace SDownload.Framework.Streams
                 var setItemReporter = new SetItemReportProxy(this, playlistData.Tracks.Length);
                 try
                 {
-                    var trackHandler = new SCTrackStream(track.PermalinkUrl, setItemReporter);
+                    var trackHandler = new SCTrackStream(track.PermalinkUrl, setItemReporter, track);
                     _downloads.Add(trackHandler, null);
                 }
                 catch (Exception)

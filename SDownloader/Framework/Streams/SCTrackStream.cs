@@ -24,11 +24,6 @@ namespace SDownload.Framework.Streams
     public class SCTrackStream : BaseStream
     {
         /// <summary>
-        /// The API client ID for SDownload
-        /// </summary>
-        public const String Clientid = "4515286ec9d4ace678140c3f84357b35";
-
-        /// <summary>
         /// The JSON response containing all of the track's data from the API
         /// </summary>
         private readonly SCTrackData _trackData;
@@ -69,7 +64,7 @@ namespace SDownload.Framework.Streams
         /// <param name="url">The link provided to the application from the view</param>
         /// <param name="view">The view to report progress back to</param>
         /// <param name="trackData">Track data from the API if it has already been downloaded</param>
-        public static async void DownloadTrack(String url, InfoReportProxy view, SCTrackData trackData = null)
+        public static async void DownloadTrack(String url, InfoReportProxy view, SCTrackData trackData)
         {
             try
             {
@@ -97,7 +92,7 @@ namespace SDownload.Framework.Streams
         /// <param name="view">The connection associated with the browser extension</param>
         /// <param name="trackData">Track data from the API if it has already been downloaded</param>
         /// <returns>A Sound representation of the remote resource</returns>
-        public SCTrackStream(String url, InfoReportProxy view, SCTrackData trackData = null) : base(url, view)
+        public SCTrackStream(String url, InfoReportProxy view, SCTrackData trackData) : base(url, view)
         {
             _trackData = trackData;
             _origUrl = url;
@@ -106,18 +101,7 @@ namespace SDownload.Framework.Streams
             // Load the track data if it wasn't already provided
             if (_trackData == null)
             {
-                const String resolveUrl = "http://api.soundcloud.com/resolve?url={0}&client_id={1}";
-                var request = (HttpWebRequest) WebRequest.Create(String.Format(resolveUrl, url, Clientid));
-                request.Method = WebRequestMethods.Http.Get;
-                request.Accept = "application/json";
-                var response = request.GetResponse().GetResponseStream();
-                if (response == null)
-                    throw new HandledException(
-                        "Soundcloud API failed to respond! This could due to an issue with your connection.");
-
-                _trackData = new DataContractJsonSerializer(typeof (SCTrackData)).ReadObject(response) as SCTrackData;
-                if (_trackData == null)
-                    throw new HandledException("Downloaded track information was corrupted!", true);
+                throw new HandledException("Downloaded track information was corrupted!", true);
             }
 
             var tokens = WebUtility.HtmlDecode(_trackData.Title).Split('-');
@@ -431,7 +415,7 @@ namespace SDownload.Framework.Streams
             if (songDownload.Equals(_trackData.StreamUrl))
                 _forceStream = true;
 
-            return songDownload + "?client_id=" + Clientid;
+            return songDownload + "?client_id=" + SCTrackData.ClientId;
         }
     }
 }

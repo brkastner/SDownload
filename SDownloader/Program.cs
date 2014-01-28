@@ -128,7 +128,7 @@ namespace SDownload
                 {
                     var link = args[0].Contains("sdownload://") ? args[0].Substring(12) : args[0];
                     if (!link.StartsWith("launch"))
-                         SCTrackStream.DownloadTrack(link, new IconReportProxy(_trayIcon));
+                        SCTrackStream.DownloadTrack(link, new IconReportProxy(_trayIcon), SCTrackData.LoadData(link));
                 }
 
                 SetupListener();
@@ -153,7 +153,7 @@ namespace SDownload
                 _listener.OnReceive += context =>
                 {
                     var data = context.DataFrame.ToString();
-                	SCTrackStream.DownloadTrack(data, new WSReportProxy(context));
+                	SCTrackStream.DownloadTrack(data, new WSReportProxy(context), SCTrackData.LoadData(data));
 
                     // Check for updates after the song has already started downloading
                     if (Settings.CheckForUpdates)

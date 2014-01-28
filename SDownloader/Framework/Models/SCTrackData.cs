@@ -1,19 +1,11 @@
 ﻿using System;
+using System.Net;
 using System.Runtime.Serialization;
+using System.Runtime.Serialization.Json;
 
 namespace SDownload.Framework.Models
 {
     #pragma warning disable
-    /// <summary>
-    /// Soundcloud API response for a set, only the tracklisting is used
-    /// </summary>
-    [DataContract]
-    public class SCPlaylistData
-    {
-        [DataMember(Name = "tracks")]
-        internal SCTrackData[] Tracks;
-    }
-
     /// <summary>
     /// Soundcloud API response for a track
     /// <see cref="http://developers.soundcloud.com/docs/api/reference#tracks"/>
@@ -21,6 +13,41 @@ namespace SDownload.Framework.Models
     [DataContract]
     public class SCTrackData
     {
+        /// <summary>
+        /// The API client ID for SDownload
+        /// </summary>
+        public const String ClientId = "4515286ec9d4ace678140c3f84357b35";
+
+        public static SCTrackData LoadData(String url, bool Mock = false)
+        {
+            return LoadData(url, typeof(SCTrackData), Mock) as SCTrackData;
+        }
+
+        internal static object LoadData(String url, Type contractType, bool Mock = false)
+        {
+            object ret;
+            if (!Mock)
+            {
+                const String resolveUrl = "http://api.soundcloud.com/resolve?url={0}&client_id={1}";
+                var request = (HttpWebRequest)WebRequest.Create(String.Format(resolveUrl, url, ClientId));
+                request.Method = WebRequestMethods.Http.Get;
+                request.Accept = "application/json";
+                var response = request.GetResponse().GetResponseStream();
+                if (response == null)
+                    throw new HandledException(
+                        "Soundcloud API failed to respond! This could due to an issue with your connection.");
+
+                ret = new DataContractJsonSerializer(contractType).ReadObject(response);
+            }
+            else
+            {
+                // TODO: Load mock data
+                ret = new SCTrackData();
+            }
+
+            return ret;
+        }
+
         [DataMember(Name = "id")]
         internal int Id;
 
@@ -184,6 +211,21 @@ namespace SDownload.Framework.Models
             [DataMember(Name = "avatar_url")]
             internal String AvatarUrl;
         }
+    }
+
+    /// <summary>
+    /// Soundcloud API response for a set, only the tracklisting is used
+    /// </summary>
+    [DataContract]
+    public class SCPlaylistData
+    {
+        public static SCPlaylistData LoadData(String url, bool Mock = false)
+        {
+            return SCTrackData.LoadData(url, typeof(SCPlaylistData), Mock) as SCPlaylistData;
+        }
+
+        [DataMember(Name = "tracks")]
+        internal SCTrackData[] Tracks;
     }
     #pragma warning enable
 }
