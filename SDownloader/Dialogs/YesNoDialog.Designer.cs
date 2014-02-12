@@ -48,7 +48,7 @@
             // askAgainCheckBox
             // 
             this.askAgainCheckBox.AutoSize = true;
-            this.askAgainCheckBox.Location = new System.Drawing.Point(12, 98);
+            this.askAgainCheckBox.Location = new System.Drawing.Point(10, 116);
             this.askAgainCheckBox.Name = "askAgainCheckBox";
             this.askAgainCheckBox.Size = new System.Drawing.Size(165, 17);
             this.askAgainCheckBox.TabIndex = 1;
@@ -57,7 +57,7 @@
             // 
             // yesButton
             // 
-            this.yesButton.Location = new System.Drawing.Point(359, 98);
+            this.yesButton.Location = new System.Drawing.Point(357, 116);
             this.yesButton.Name = "yesButton";
             this.yesButton.Size = new System.Drawing.Size(83, 23);
             this.yesButton.TabIndex = 2;
@@ -66,7 +66,7 @@
             // 
             // noButton
             // 
-            this.noButton.Location = new System.Drawing.Point(278, 98);
+            this.noButton.Location = new System.Drawing.Point(276, 116);
             this.noButton.Name = "noButton";
             this.noButton.Size = new System.Drawing.Size(75, 23);
             this.noButton.TabIndex = 3;
@@ -87,7 +87,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(454, 133);
+            this.ClientSize = new System.Drawing.Size(454, 151);
             this.ControlBox = false;
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.noButton);
