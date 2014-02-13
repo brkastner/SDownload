@@ -104,7 +104,7 @@ namespace SDownload
             {
                 _mainMenu = new ContextMenu();
                 _mainMenu.MenuItems.Add("Donate", (sender, eargs) => OpenUrlInBrowser(DonateUrl));
-                _mainMenu.MenuItems.Add("Check for Updates", (sender, eargs) => CheckVersion());
+                _mainMenu.MenuItems.Add("Check for Updates", (sender, eargs) => CheckVersion(true));
                 _mainMenu.MenuItems.Add("Download Chrome Extension", (sender, eargs) => OpenUrlInBrowser(ChromeExtensionDownloadUrl));
                 _mainMenu.MenuItems.Add("Settings", ShowSettings);
                 _mainMenu.MenuItems.Add("Exit", ConfirmExitApplication);
@@ -126,8 +126,7 @@ namespace SDownload
                 SetupListener();
 
                 // Asynchronously check for updates
-                if (Settings.CheckForUpdates)
-                    CheckVersion();
+                CheckVersion();
 
                 // Check if Chrome extension installed
                 ValidateChromeInstallation();
@@ -148,8 +147,7 @@ namespace SDownload
                     StreamFactory.DownloadTrack(data, new WSReportProxy(context));
 
                     // Check for updates after the song has already started downloading
-                    if (Settings.CheckForUpdates)
-                        CheckVersion();
+                    CheckVersion();
                 };
                 _listener.Start();
             }
@@ -240,8 +238,12 @@ namespace SDownload
         /// <summary>
         /// Checks if the current version is the newest version
         /// </summary>
-        private void CheckVersion()
+        private static void CheckVersion(bool force = false)
         {
+            // Don't check the version if the setting is disabled and we aren't being forced
+            if (!force || !Settings.CheckForUpdates)
+                return;
+
             try
             {
                 // Query the remote Github API for newer releases
