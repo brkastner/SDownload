@@ -13,6 +13,15 @@ namespace SDownload.Framework
     public class CrashHandler
     {
         /// <summary>
+        /// Sets the User ID that accompanies any crashes
+        /// </summary>
+        public static void SetUserIdentifier()
+        {
+            var enabled = Settings.IncludeSupportEmail && !String.IsNullOrWhiteSpace(Settings.SupportEmail);
+            BugSenseHandler.Instance.UserIdentifier = enabled ? Settings.SupportEmail : "";
+        }
+
+        /// <summary>
         /// Reports an error to the user, and provides the option to report if the crash is critical enough
         /// </summary>
         /// <param name="message">Message to show to the user</param>

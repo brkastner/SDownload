@@ -118,5 +118,29 @@ namespace SDownload.Properties {
                 this["EnableBetaUpdates"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool IncludeSupportEmail {
+            get {
+                return ((bool)(this["IncludeSupportEmail"]));
+            }
+            set {
+                this["IncludeSupportEmail"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string SupportEmail {
+            get {
+                return ((string)(this["SupportEmail"]));
+            }
+            set {
+                this["SupportEmail"] = value;
+            }
+        }
     }
 }

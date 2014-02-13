@@ -1,4 +1,5 @@
-﻿using System.Windows.Forms;
+﻿using System;
+using System.Windows.Forms;
 using SDownload.Framework;
 
 namespace SDownload.Dialogs
@@ -51,6 +52,15 @@ namespace SDownload.Dialogs
             // Beta Updates
             betaCheckBox.Checked = Settings.EnableBetaUpdates;
 
+            // Support email
+            enableEmail.Checked = Settings.IncludeSupportEmail;
+            enableEmail.CheckedChanged += (sender, args) =>
+                                          {
+                                              emailTextBox.Enabled = enableEmail.Checked;
+                                          };
+            emailTextBox.Text = Settings.SupportEmail;
+            emailTextBox.Enabled = enableEmail.Checked;
+
             // Save Settings
             saveBtn.Click += (sender, args) =>
                                  {
@@ -69,6 +79,10 @@ namespace SDownload.Dialogs
                                      Settings.ConfirmExit = confirmExitCheckBox.Checked;
                                      Settings.CheckForUpdates = checkForUpdates.Checked;
                                      Settings.EnableBetaUpdates = betaCheckBox.Checked;
+
+                                     Settings.IncludeSupportEmail = enableEmail.Checked;
+                                     Settings.SupportEmail = emailTextBox.Text;
+                                     CrashHandler.SetUserIdentifier();
 
                                      Close();
                                  };

@@ -22,6 +22,32 @@ namespace SDownload.Framework
         }
 
         /// <summary>
+        /// If the user's support email should be attached to crash information
+        /// </summary>
+        public static bool IncludeSupportEmail
+        {
+            get { return Storage.Default.IncludeSupportEmail; }
+            set
+            {
+                Storage.Default.IncludeSupportEmail = value;
+                Storage.Default.Save();
+            }
+        }
+
+        /// <summary>
+        /// An email the user can be reached at if they receive a crash
+        /// </summary>
+        public static String SupportEmail
+        {
+            get { return Storage.Default.SupportEmail; }
+            set
+            {
+                Storage.Default.SupportEmail = value;
+                Storage.Default.Save();
+            }
+        }
+
+        /// <summary>
         /// The location main resource files should be downloaded to
         /// </summary>
         public static String DownloadFolder

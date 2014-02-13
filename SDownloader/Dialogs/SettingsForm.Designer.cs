@@ -44,6 +44,8 @@ namespace SDownload.Dialogs
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.checkForUpdates = new System.Windows.Forms.CheckBox();
             this.betaCheckBox = new System.Windows.Forms.CheckBox();
+            this.enableEmail = new System.Windows.Forms.CheckBox();
+            this.emailTextBox = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -96,7 +98,7 @@ namespace SDownload.Dialogs
             // 
             // saveBtn
             // 
-            this.saveBtn.Location = new System.Drawing.Point(408, 255);
+            this.saveBtn.Location = new System.Drawing.Point(407, 320);
             this.saveBtn.Name = "saveBtn";
             this.saveBtn.Size = new System.Drawing.Size(75, 23);
             this.saveBtn.TabIndex = 5;
@@ -163,11 +165,30 @@ namespace SDownload.Dialogs
             this.betaCheckBox.Text = "Enable beta updates";
             this.betaCheckBox.UseVisualStyleBackColor = true;
             // 
+            // enableEmail
+            // 
+            this.enableEmail.AutoSize = true;
+            this.enableEmail.Location = new System.Drawing.Point(11, 267);
+            this.enableEmail.Name = "enableEmail";
+            this.enableEmail.Size = new System.Drawing.Size(190, 17);
+            this.enableEmail.TabIndex = 12;
+            this.enableEmail.Text = "Include my email with crash reports";
+            this.enableEmail.UseVisualStyleBackColor = true;
+            // 
+            // emailTextBox
+            // 
+            this.emailTextBox.Location = new System.Drawing.Point(29, 290);
+            this.emailTextBox.Name = "emailTextBox";
+            this.emailTextBox.Size = new System.Drawing.Size(413, 20);
+            this.emailTextBox.TabIndex = 13;
+            // 
             // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(495, 287);
+            this.ClientSize = new System.Drawing.Size(495, 355);
+            this.Controls.Add(this.emailTextBox);
+            this.Controls.Add(this.enableEmail);
             this.Controls.Add(this.betaCheckBox);
             this.Controls.Add(this.checkForUpdates);
             this.Controls.Add(this.pictureBox1);
@@ -206,5 +227,7 @@ namespace SDownload.Dialogs
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.CheckBox checkForUpdates;
         private System.Windows.Forms.CheckBox betaCheckBox;
+        private System.Windows.Forms.CheckBox enableEmail;
+        private System.Windows.Forms.TextBox emailTextBox;
     }
 }

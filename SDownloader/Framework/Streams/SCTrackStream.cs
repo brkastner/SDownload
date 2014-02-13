@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Runtime.Serialization.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -82,9 +81,7 @@ namespace SDownload.Framework.Streams
 
             // _trackData is null if there was an error parsing the response
             if (_trackData == null)
-            {
                 throw new HandledException("Downloaded track information was corrupted!", true);
-            }
 
             var tokens = WebUtility.HtmlDecode(_trackData.Title).Split('-');
             _author = _trackData.User.Username;
