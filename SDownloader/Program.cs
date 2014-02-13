@@ -77,15 +77,7 @@ namespace SDownload
         [STAThread]
         private static void Main(String[] args)
         {
-            // Initialize error handling
-            const string uncaughtErrorMsg =
-                "SDownload has encountered an unexpected bug and needs to stop what it was doing. This crash has been recorded in order to improve future versions.";
-
-            var exceptionManager = new ExceptionManager();
-            exceptionManager.ThreadException += (sender, e) => CrashHandler.Throw(uncaughtErrorMsg, e.Exception, false);
-            exceptionManager.UnhandledException +=
-                (sender, e) => CrashHandler.Throw(uncaughtErrorMsg, e.ExceptionObject as Exception, false);
-            BugSenseHandler.Instance.InitAndStartSession(exceptionManager, BugSenseApiKey);
+            BugSenseHandler.Instance.InitAndStartSession(new ExceptionManager(), BugSenseApiKey);
             CrashHandler.SetUserIdentifier();
             Application.Run(new Program(args));
         }
