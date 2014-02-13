@@ -35,8 +35,7 @@ namespace SDownload.Framework
                     // Log exception only if 'Report' was chosen, and the exception was critical
                     if (result && canReport)
                         BugSenseHandler.Instance.SendExceptionAsync(inner);
-                    BugSenseHandler.Instance.ClearCrashExtraData();
-                    BugSenseHandler.Instance.ClearBreadCrumbs();
+                    ClearExtras();
                 }
             };
             dialog.Show();
@@ -68,6 +67,7 @@ namespace SDownload.Framework
         public static void ClearExtras()
         {
             BugSenseHandler.Instance.ClearCrashExtraData();
+            BugSenseHandler.Instance.ClearBreadCrumbs();
         }
     }
 }
