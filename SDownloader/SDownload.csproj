@@ -133,6 +133,7 @@
     <Compile Include="Dialogs\Updates\UpdateAvailableDialog.Designer.cs">
       <DependentUpon>UpdateAvailableDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Framework\CrashHandler.cs" />
     <Compile Include="Framework\Progress Reporting\IconReportProxy.cs" />
     <Compile Include="Framework\Streams\BaseStream.cs" />
     <Compile Include="Framework\Models\GithubReleaseApi.cs" />
@@ -140,6 +141,7 @@
     <Compile Include="Framework\Progress Reporting\InfoReportProxy.cs" />
     <Compile Include="Framework\Progress Reporting\WSReportProxy.cs" />
     <Compile Include="Framework\Streams\SCSetStream.cs" />
+    <Compile Include="Framework\Streams\StreamFactory.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

@@ -18,15 +18,15 @@ namespace SDownload.Framework.Models
         /// </summary>
         public const String ClientId = "4515286ec9d4ace678140c3f84357b35";
 
-        public static SCTrackData LoadData(String url, bool Mock = false)
+        public static SCTrackData LoadData(String url, bool mock = false)
         {
-            return LoadData(url, typeof(SCTrackData), Mock) as SCTrackData;
+            return LoadData(url, typeof(SCTrackData), mock) as SCTrackData;
         }
 
-        internal static object LoadData(String url, Type contractType, bool Mock = false)
+        internal static object LoadData(String url, Type contractType, bool mock = false)
         {
             object ret;
-            if (!Mock)
+            if (!mock)
             {
                 const String resolveUrl = "http://api.soundcloud.com/resolve?url={0}&client_id={1}";
                 var request = (HttpWebRequest)WebRequest.Create(String.Format(resolveUrl, url, ClientId));
@@ -40,10 +40,7 @@ namespace SDownload.Framework.Models
                 ret = new DataContractJsonSerializer(contractType).ReadObject(response);
             }
             else
-            {
-                // TODO: Load mock data
                 ret = new SCTrackData();
-            }
 
             return ret;
         }
@@ -89,9 +86,9 @@ namespace SDownload.Framework.Models
     [DataContract]
     public class SCPlaylistData
     {
-        public static SCPlaylistData LoadData(String url, bool Mock = false)
+        public static SCPlaylistData LoadData(String url, bool mock = false)
         {
-            return SCTrackData.LoadData(url, typeof(SCPlaylistData), Mock) as SCPlaylistData;
+            return SCTrackData.LoadData(url, typeof(SCPlaylistData), mock) as SCPlaylistData;
         }
 
         [DataMember(Name = "tracks")]

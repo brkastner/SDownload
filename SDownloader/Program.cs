@@ -81,9 +81,9 @@ namespace SDownload
             const string uncaughtErrorMsg =
                 "SDownload has encountered an unexpected bug and needs to stop what it was doing. This crash has been recorded in order to improve future versions.";
             var exceptionManager = new ExceptionManager();
-            exceptionManager.ThreadException += (sender, e) => HandledException.Throw(uncaughtErrorMsg, e.Exception, false);
+            exceptionManager.ThreadException += (sender, e) => CrashHandler.Throw(uncaughtErrorMsg, e.Exception, false);
             exceptionManager.UnhandledException +=
-                (sender, e) => HandledException.Throw(uncaughtErrorMsg, e.ExceptionObject as Exception, false);
+                (sender, e) => CrashHandler.Throw(uncaughtErrorMsg, e.ExceptionObject as Exception, false);
             BugSenseHandler.Instance.InitAndStartSession(exceptionManager, BugSenseApiKey);
 
             Application.Run(new Program(args));
@@ -127,8 +127,7 @@ namespace SDownload
                 if (args.Length > 0)
                 {
                     var link = args[0].Contains("sdownload://") ? args[0].Substring(12) : args[0];
-                    if (!link.StartsWith("launch"))
-                        SCTrackStream.DownloadTrack(link, new IconReportProxy(_trayIcon), SCTrackData.LoadData(link));
+                    StreamFactory.DownloadTrack(link, new IconReportProxy(_trayIcon));
                 }
 
                 SetupListener();
@@ -153,7 +152,7 @@ namespace SDownload
                 _listener.OnReceive += context =>
                 {
                     var data = context.DataFrame.ToString();
-                	SCTrackStream.DownloadTrack(data, new WSReportProxy(context), SCTrackData.LoadData(data));
+                    StreamFactory.DownloadTrack(data, new WSReportProxy(context));
 
                     // Check for updates after the song has already started downloading
                     if (Settings.CheckForUpdates)
@@ -164,7 +163,7 @@ namespace SDownload
             catch(Exception e)
             {
                 BugSenseHandler.Instance.LeaveBreadCrumb("Listener was not able to be started!");
-                HandledException.Throw("There was an issue listening for downloads! Make sure your firewall is not blocking this application", e);
+                CrashHandler.Throw("There was an issue listening for downloads! Make sure your firewall is not blocking this application", e);
                 Application.Exit();
             }
         }
@@ -188,7 +187,7 @@ namespace SDownload
                 }
                 catch (Exception e)
                 {
-                    HandledException.Throw("There was an issue opening your browser! You can try manually navigating to " + url, e);
+                    CrashHandler.Throw("There was an issue opening your browser! You can try manually navigating to " + url, e);
                 }
             }
         }
@@ -298,7 +297,7 @@ namespace SDownload
             }
             catch (WebException e)
             {
-                HandledException.Throw("Unable to make a connection to the SDownload API to check for updates!", e);
+                CrashHandler.Throw("Unable to make a connection to the SDownload API to check for updates!", e);
             }
         }
 

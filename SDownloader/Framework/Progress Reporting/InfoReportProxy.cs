@@ -44,7 +44,7 @@ namespace SDownload.Framework
             catch (Exception e)
             {
                 _canSend = false;
-                HandledException.Throw(e.Message, e);
+                CrashHandler.Throw(e.Message, e);
             }
         }
 

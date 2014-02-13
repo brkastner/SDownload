@@ -59,38 +59,20 @@ namespace SDownload.Framework.Streams
         private bool _forceManual;
 
         /// <summary>
-        /// Parse the given link and send it to the appropriate stream downloader
+        /// Gather and prepare all the necessary information for downloading the actual remote resource
         /// </summary>
-        /// <param name="url">The link provided to the application from the view</param>
-        /// <param name="view">The view to report progress back to</param>
-        /// <param name="trackData">Track data from the API if it has already been downloaded</param>
-        public static async void DownloadTrack(String url, InfoReportProxy view, SCTrackData trackData)
+        /// <param name="url">The URL to the individual song</param>
+        /// <param name="view">The proxy to report information back to</param>
+        public SCTrackStream(String url, InfoReportProxy view) : this(url, view, SCTrackData.LoadData(url))
         {
-            try
-            {
-                BaseStream sound;
-                if (url.Contains(@"/sets/"))
-                    sound = new SCSetStream(url, view);
-                else
-                    sound = new SCTrackStream(url, view, trackData);
-
-                var download = sound.Download();
-
-                if (download != null && await download)
-                    sound.Finish();
-            }
-            catch (Exception e)
-            {
-                HandledException.Throw("There was an issue downloading the stream!", e);
-            }
         }
 
         /// <summary>
         /// Gather and prepare all the necessary information for downloading the actual remote resource
         /// </summary>
         /// <param name="url">The URL to the individual song</param>
-        /// <param name="view">The connection associated with the browser extension</param>
-        /// <param name="trackData">Track data from the API if it has already been downloaded</param>
+        /// <param name="view">The proxy to report information back to</param>
+        /// <param name="trackData">The track's metadata retrieved from SoundCloud</param>
         /// <returns>A Sound representation of the remote resource</returns>
         public SCTrackStream(String url, InfoReportProxy view, SCTrackData trackData) : base(url, view)
         {
@@ -98,7 +80,7 @@ namespace SDownload.Framework.Streams
             _origUrl = url;
             View = view;
 
-            // Load the track data if it wasn't already provided
+            // _trackData is null if there was an error parsing the response
             if (_trackData == null)
             {
                 throw new HandledException("Downloaded track information was corrupted!", true);
@@ -175,7 +157,7 @@ namespace SDownload.Framework.Streams
                     else
                     {
                         View.Report("Error!", true);
-                        HandledException.Throw("There was an issue downloading the necessary file(s)!",
+                        CrashHandler.Throw("There was an issue downloading the necessary file(s)!",
                                                LastException);
                     }
                 }
@@ -223,7 +205,7 @@ namespace SDownload.Framework.Streams
                     if (!retry)
                     {
                         View.Report("Error!", true);
-                        HandledException.Throw("Unable to download a valid song format for editing!", e);
+                        CrashHandler.Throw("Unable to download a valid song format for editing!", e);
                     }
                 }
             }
@@ -258,7 +240,7 @@ namespace SDownload.Framework.Streams
             {
                 // Should have been handled already
                 View.Report("Invalid file!", true);
-                HandledException.Throw("Invalid file was downloaded!", e);
+                CrashHandler.Throw("Invalid file was downloaded!", e);
                 return false;
             }
 
@@ -400,7 +382,7 @@ namespace SDownload.Framework.Streams
                 }
                 catch (Exception e)
                 {
-                    HandledException.Throw("Song does not allow streaming and there was an issue manually downloading the song file!", e, false);
+                    CrashHandler.Throw("Song does not allow streaming and there was an issue manually downloading the song file!", e, false);
                     return null;
                 }
 

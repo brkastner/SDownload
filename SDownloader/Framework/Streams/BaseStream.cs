@@ -71,7 +71,6 @@ namespace SDownload.Framework.Streams
             View = view;
 
             View.Report("Processing");
-            BugSenseHandler.Instance.AddCrashExtraData(new CrashExtraData { Key = "stream_url", Value = url });
         }
 
         /// <summary>
@@ -87,7 +86,7 @@ namespace SDownload.Framework.Streams
                 // Download the main resource
                 if (MainResource == null)
                 {
-                    HandledException.Throw("No resource has been registered for download!");
+                    CrashHandler.Throw("No resource has been registered for download!");
                     return false;
                 }
 

@@ -77,7 +77,7 @@ namespace SDownload.Dialogs
                 } 
                 catch (Exception)
                 {
-                    HandledException.Throw("There was an issue launching the update! You'll need to manually start the file: " + fileLocation, false);
+                    CrashHandler.Throw("There was an issue launching the update! You'll need to manually start the file: " + fileLocation, false);
                 }
                 Close();
                 Application.Exit();
@@ -85,7 +85,7 @@ namespace SDownload.Dialogs
             else
             {
                 // There was an issue downloading the file
-                HandledException.Throw("There was an issue downloading the update!", downloader.LastException);
+                CrashHandler.Throw("There was an issue downloading the update!", downloader.LastException);
                 Close();
             }
         }
