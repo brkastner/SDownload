@@ -67,7 +67,8 @@ namespace SDownload.Framework
         /// <param name="value">The debug information to send</param>
         public static void AddExtra(String key, String value)
         {
-            BugSenseHandler.Instance.AddCrashExtraData(new CrashExtraData { Key = key, Value = value });
+            if (!String.IsNullOrEmpty(value))
+                BugSenseHandler.Instance.AddCrashExtraData(new CrashExtraData { Key = key, Value = value });
         }
 
         /// <summary>
