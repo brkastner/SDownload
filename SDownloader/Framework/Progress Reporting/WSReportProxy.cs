@@ -1,30 +1,30 @@
 ﻿using System;
-using Alchemy.Classes;
 using SDownload.Framework;
+using WebSocketSharp.Server;
 
 namespace SDownload.Framework
 {
     /// <summary>
     /// Provides an interface for communicating with a remote websocket client
     /// </summary>
-    public class WSReportProxy : InfoReportProxy
+    public class WsReportProxy : InfoReportProxy
     {
         /// <summary>
         /// The Websocket context
         /// </summary>
-        internal readonly UserContext Context;
+        internal readonly Listener Context;
 
         /// <summary>
         /// Creates a report proxy that can send information to a
         /// websocket client
         /// </summary>
         /// <param name="context"></param>
-        public WSReportProxy(UserContext context)
+        public WsReportProxy(Listener context)
         {
             if (context == null) return;
 
             Context = context;
-            Remote = WSReport;
+            Remote = WsReport;
         }
 
         /// <summary>
@@ -32,11 +32,11 @@ namespace SDownload.Framework
         /// passing in default values for the second and third param
         /// </summary>
         /// <param name="info">The information to send</param>
-        private void WSReport(String info)
+        private void WsReport(String info)
         {
             try
             {
-                Context.Send(info);
+                Context.Message(info);
             }
             catch (Exception e)
             {

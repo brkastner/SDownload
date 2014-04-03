@@ -5,7 +5,6 @@ using System.Net;
 using System.Reflection;
 using System.Runtime.Serialization.Json;
 using System.Threading;
-using Alchemy;
 using System;
 using System.Windows.Forms;
 using BugSense;
@@ -14,8 +13,11 @@ using SDownload.Dialogs;
 using SDownload.Framework;
 using SDownload.Framework.Models;
 using SDownload.Framework.Streams;
+using WebSocketSharp.Server;
 using Resources = SDownload.Properties.Resources;
 using System.Text;
+
+using WebSocketSharp;
 
 namespace SDownload
 {
@@ -44,6 +46,11 @@ namespace SDownload
         /// Listener for song download messages
         /// </summary>
         private WebSocketServer _listener;
+
+        /// <summary>
+        /// Secure listener for song download messages (for firefox)
+        /// </summary>
+        private WebSocketServer _secureListener;
 
         /// <summary>
         /// UI for configuring SDownload
@@ -104,7 +111,7 @@ namespace SDownload
             {
                 _mainMenu = new ContextMenu();
                 _mainMenu.MenuItems.Add("Donate", (sender, eargs) => OpenUrlInBrowser(DonateUrl));
-                _mainMenu.MenuItems.Add("Check for Updates", (sender, eargs) => CheckVersion(true));
+                _mainMenu.MenuItems.Add("Check for Updates", (sender, eargs) => Updater.CheckVersion(true));
                 _mainMenu.MenuItems.Add("Download Chrome Extension", (sender, eargs) => OpenUrlInBrowser(ChromeExtensionDownloadUrl));
                 _mainMenu.MenuItems.Add("Settings", ShowSettings);
                 _mainMenu.MenuItems.Add("Exit", ConfirmExitApplication);
@@ -126,7 +133,7 @@ namespace SDownload
                 SetupListener();
 
                 // Asynchronously check for updates
-                CheckVersion();
+                Updater.CheckVersion();
 
                 // Check if Chrome extension installed
                 ValidateChromeInstallation();
@@ -140,16 +147,14 @@ namespace SDownload
         {
             try
             {
-                _listener = new WebSocketServer(7030, IPAddress.Parse("127.0.0.1"));
-                _listener.OnReceive += context =>
-                {
-                    var data = context.DataFrame.ToString();
-                    StreamFactory.DownloadTrack(data, new WSReportProxy(context));
-
-                    // Check for updates after the song has already started downloading
-                    CheckVersion();
-                };
+                
+                _listener = new WebSocketServer(7030);
+                _listener.AddWebSocketService<Listener>("/");
                 _listener.Start();
+
+                _secureListener = new WebSocketServer("wss://localhost:7031");
+                _secureListener.AddWebSocketService<Listener>("/");
+                _secureListener.Start();
             }
             catch(Exception e)
             {
@@ -235,66 +240,6 @@ namespace SDownload
             dialog.Show();
         }
 
-        /// <summary>
-        /// Checks if the current version is the newest version
-        /// </summary>
-        private static void CheckVersion(bool force = false)
-        {
-            // Don't check the version if the setting is disabled and we aren't being forced
-            if (!force || !Settings.CheckForUpdates)
-                return;
-
-            try
-            {
-                // Query the remote Github API for newer releases
-                var request =
-                    (HttpWebRequest) WebRequest.Create("https://api.github.com/repos/brkastner/SDownload/releases");
-                request.Method = WebRequestMethods.Http.Get;
-                request.Accept = "application/vnd.github.v3+json";
-                request.UserAgent = "SDownload";
-
-                // Process response
-                var response = request.GetResponse().GetResponseStream();
-                if (response == null)
-                    throw new HandledException("There was an issue checking for updates!");
-
-                var contract =
-                    new DataContractJsonSerializer(typeof (GithubReleaseItemContract[])).ReadObject(response) as
-                    GithubReleaseItemContract[];
-                if (contract == null)
-                    throw new HandledException("Could not deserialize the version update information!", true);
-
-                var currentVersion = new int[3];
-                var i = 0;
-                foreach (var num in (Application.ProductVersion).Split('.'))
-                    currentVersion[i++] = Int32.Parse(num);
-
-                // Combine any new releases to get the changelog from each
-                var newerReleases = (from release in contract
-                                     let versionNumbers = (release.TagName.Remove(0, 1)).Split('.')
-                                     where ((Int32.Parse(versionNumbers[0]) > currentVersion[0]) || // Major
-                                            (Int32.Parse(versionNumbers[0]) == currentVersion[0] && // Minor
-                                            Int32.Parse(versionNumbers[1]) > currentVersion[1]) ||
-                                            (Int32.Parse(versionNumbers[0]) == currentVersion[0] && // Incremental
-                                            Int32.Parse(versionNumbers[1]) == currentVersion[1] &&
-                                            Int32.Parse(versionNumbers[2]) > currentVersion[2])) 
-                                            && !release.Draft                                       // Ignore drafts
-                                     select release).ToList();
-
-                // Remove beta updates if the option is disabled
-                if (!Settings.EnableBetaUpdates)
-                    newerReleases = (from release in newerReleases where !release.PreRelease select release).ToList();
-
-                if (newerReleases.Count < 1) return;
-
-                // Current version is not up to date, prompt the user to download the new version
-                UpdateAvailableDialog.Prompt(newerReleases[0].Assets[0].Url, newerReleases);
-            }
-            catch (WebException e)
-            {
-                CrashHandler.Throw("Unable to make a connection to the SDownload API to check for updates!", e);
-            }
-        }
 
         /// <summary>
         /// Show the settings form, creating one of it doesn't already exist
@@ -345,11 +290,6 @@ namespace SDownload
         /// </summary>
         private void Exit()
         {
-            if (_listener != null)
-            {
-                _listener.Stop();
-            }
-
             Application.Exit();
         }
 
@@ -374,9 +314,6 @@ namespace SDownload
             if (_settingsForm != null)
                 _settingsForm.Close();
 
-            if (_listener != null)
-                _listener.Stop();
-
             base.OnClosing(e);
         }
 
@@ -389,7 +326,10 @@ namespace SDownload
             if (disposing)
             {
                 if (_listener != null)
-                    _listener.Dispose();
+                    _listener.Stop();
+
+                if (_secureListener != null)
+                    _secureListener.Stop();
 
                 if (_trayIcon != null)
                     _trayIcon.Dispose();

@@ -128,7 +128,9 @@ namespace SDownload.Framework.Streams
         /// Validates the download. The base stream does not do any validation.
         /// </summary>
         /// <returns></returns>
+#pragma warning disable 1998
         public virtual async Task<bool> Validate()
+#pragma warning restore 1998
         {
             View.Report("Validating");
             return true;
