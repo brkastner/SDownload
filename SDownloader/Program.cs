@@ -63,8 +63,7 @@ namespace SDownload
         /// <summary>
         /// URL for downloading the helper extension for Chrome
         /// </summary>
-        private const String ChromeExtensionDownloadUrl =
-            "https://chrome.google.com/webstore/detail/sdownload/dkflmdcolphnomonabinogaegbjbnbbm";
+        private const String ChromeExtensionDownloadUrl = "http://www.sdownloadapp.com/chrome.html";
 
         /// <summary>
         /// URL for donating :)
