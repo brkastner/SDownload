@@ -70,6 +70,9 @@
     <ApplicationIcon>sdownload.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Alchemy">
+      <HintPath>..\packages\Alchemy.2.2.1\lib\net40\Alchemy.dll</HintPath>
+    </Reference>
     <Reference Include="BugSense-WF">
       <HintPath>Resources\BugSense-WF.dll</HintPath>
     </Reference>
@@ -109,9 +112,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\taglib.2.1.0.0\lib\taglib-sharp.dll</HintPath>
     </Reference>
-    <Reference Include="websocket-sharp">
-      <HintPath>Resources\websocket-sharp.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Dialogs\Updates\DownloadProgressDialog.cs">
@@ -133,7 +133,6 @@
       <DependentUpon>UpdateAvailableDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Framework\CrashHandler.cs" />
-    <Compile Include="Framework\NonSecureListener.cs" />
     <Compile Include="Framework\Progress Reporting\IconReportProxy.cs" />
     <Compile Include="Framework\Streams\BaseStream.cs" />
     <Compile Include="Framework\Models\GithubReleaseApi.cs" />
@@ -142,7 +141,6 @@
     <Compile Include="Framework\Progress Reporting\WSReportProxy.cs" />
     <Compile Include="Framework\Streams\SCSetStream.cs" />
     <Compile Include="Framework\Streams\StreamFactory.cs" />
-    <Compile Include="Framework\Updater.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
