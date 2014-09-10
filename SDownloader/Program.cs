@@ -63,7 +63,7 @@ namespace SDownload
         /// <summary>
         /// URL for downloading the helper extension for Chrome
         /// </summary>
-        private const String ChromeExtensionDownloadUrl = "http://www.sdownloadapp.com/chrome.html";
+        private const String ChromeExtensionDownloadUrl = "https://addons.mozilla.org/en-US/firefox/addon/sdownload/";
 
         /// <summary>
         /// URL for donating :)
@@ -88,74 +88,32 @@ namespace SDownload
         public Program(String[] args)
         {
             // Only start if there isn't an instance already running
-            if (IsAlreadyRunning())
+            _mainMenu = new ContextMenu();
+            _mainMenu.MenuItems.Add("Donate", (sender, eargs) => OpenUrlInBrowser(DonateUrl));
+            _mainMenu.MenuItems.Add("Check for Updates", (sender, eargs) => CheckVersion(true));
+            _mainMenu.MenuItems.Add("Download Firefox Extension", (sender, eargs) => OpenUrlInBrowser(ChromeExtensionDownloadUrl));
+            _mainMenu.MenuItems.Add("Settings", ShowSettings);
+            _mainMenu.MenuItems.Add("Exit", ConfirmExitApplication);
+
+            _trayIcon = new NotifyIcon
             {
-                var dialog =
-                    new YesNoDialog(
-                        "Only one instance of SDownload can be running at a time!",
-                        "Close", null)
-                        {
-                            ResponseCallback = result => Exit()
-                        };
-                dialog.Show();
-            }
-            else
+                Text = Resources.ApplicationName,
+                Icon = Resources.ApplicationIcon,
+                ContextMenu = _mainMenu,
+                Visible = true
+            };
+
+            if (args.Length > 0)
             {
-                _mainMenu = new ContextMenu();
-                _mainMenu.MenuItems.Add("Donate", (sender, eargs) => OpenUrlInBrowser(DonateUrl));
-                _mainMenu.MenuItems.Add("Check for Updates", (sender, eargs) => CheckVersion(true));
-                _mainMenu.MenuItems.Add("Download Chrome Extension", (sender, eargs) => OpenUrlInBrowser(ChromeExtensionDownloadUrl));
-                _mainMenu.MenuItems.Add("Settings", ShowSettings);
-                _mainMenu.MenuItems.Add("Exit", ConfirmExitApplication);
-
-                _trayIcon = new NotifyIcon
-                {
-                    Text = Resources.ApplicationName,
-                    Icon = Resources.ApplicationIcon,
-                    ContextMenu = _mainMenu,
-                    Visible = true
-                };
-
-                if (args.Length > 0)
-                {
-                    var link = args[0].Contains("sdownload://") ? args[0].Substring(12) : args[0];
-                    StreamFactory.DownloadTrack(link, new IconReportProxy(_trayIcon));
-                }
-
-                SetupListener();
-
-                // Asynchronously check for updates
-                CheckVersion();
-
-                // Check if Chrome extension installed
-                ValidateChromeInstallation();
+                var link = args[0].Contains("sdownload://") ? args[0].Substring(12) : args[0];
+                StreamFactory.DownloadTrack(link, new IconReportProxy(_trayIcon), true);
             }
-        }
 
-        /// <summary>
-        /// Set up the listening server
-        /// </summary>
-        private void SetupListener()
-        {
-            try
-            {
-                _listener = new WebSocketServer(7030, IPAddress.Parse("127.0.0.1"));
-                _listener.OnReceive += context =>
-                {
-                    var data = context.DataFrame.ToString();
-                    StreamFactory.DownloadTrack(data, new WSReportProxy(context));
+            // Asynchronously check for updates
+            CheckVersion();
 
-                    // Check for updates after the song has already started downloading
-                    CheckVersion();
-                };
-                _listener.Start();
-            }
-            catch(Exception e)
-            {
-                BugSenseHandler.Instance.LeaveBreadCrumb("Listener was not able to be started!");
-                CrashHandler.Throw("There was an issue listening for downloads! Make sure your firewall is not blocking this application", e);
-                Application.Exit();
-            }
+            // Check if Chrome extension installed
+            ValidateChromeInstallation();
         }
 
         /// <summary>
@@ -166,7 +124,7 @@ namespace SDownload
         {
             try
             {
-                Process.Start("chrome", url);
+                Process.Start("firefox", url);
             }
             catch (Exception)
             {
@@ -187,7 +145,7 @@ namespace SDownload
         /// extension is installed
         /// </summary>
         private void ValidateChromeInstallation()
-        {
+        {/*
             var extensionPath = Path.GetTempPath() + "..\\Google\\Chrome\\User Data\\Default\\Extensions\\";
 
             // Ensure the user has chrome installed
@@ -231,7 +189,7 @@ namespace SDownload
                             Exit();
                     }
                 };
-            dialog.Show();
+            dialog.Show();*/
         }
 
         /// <summary>

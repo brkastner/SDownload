@@ -3,26 +3,14 @@ function downloadSong(target) {
     var songHref = $(target).attr("data");
 
     $(target).off("click");
-    $(target).html("Loading");
+    $(target).html("Sent to Application!");
     $(target).addClass("sc-button-selected");
-    
-    self.port.emit("download", songHref);
-    self.port.on(songHref, function(data) {
-        if (data.indexOf("Failure") != -1) {
-            window.location = "sdownload://" + songHref;
-            $(target).html("Sent to Application!");
-            logDownload();
-        } else if (data.indexOf("CLOSE") != -1) {
-            $(target).on("click");
-        } else {
-            $(target).html(data);
-            $(target).attr("title", "SDownload: " + data);
-        }
-    });
+    console.log("redirecting to sdownload://" + songHref);
+    window.location.href = 'sdownload://' + songHref;
+    // logDownload();
 };
 
 function addDownloadButton() {
-    console.log("add download button called");
     // Single Song
     $(".listenContent .sound.single").each(function() {
         var self = $(this);

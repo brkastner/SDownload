@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Net.Mime;
+using System.Windows.Forms;
 
 namespace SDownload.Framework.Streams
 {
@@ -9,7 +11,8 @@ namespace SDownload.Framework.Streams
         /// </summary>
         /// <param name="url">The link provided to the application from the view</param>
         /// <param name="view">The view to report progress back to</param>
-        public static async void DownloadTrack(String url, InfoReportProxy view)
+        /// <param name="exit">Exit after download?</param>
+        public static async void DownloadTrack(String url, InfoReportProxy view, bool exit = false)
         {
             CrashHandler.AddExtra("stream_url", url);
             try
@@ -32,6 +35,10 @@ namespace SDownload.Framework.Streams
             finally
             {
                 CrashHandler.ClearExtras();
+                if (exit)
+                {
+                    Application.Exit();
+                }
             }
         }
     }

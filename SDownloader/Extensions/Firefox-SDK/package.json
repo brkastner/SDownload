@@ -1,9 +1,9 @@
 {
-  "name": "firefox-sdk",
-  "title": "Firefox-SDK",
+  "name": "sdownload",
+  "title": "SDownload",
   "id": "jid1-JLIARwZFqllJHA",
-  "description": "a basic add-on",
-  "author": "",
+  "description": "SDownload allows you to download any song from Soundcloud with only the click of a button! Not only that, but SDownload will automatically set the title, author, artwork and other ID3 tags before moving the song directly into your iTunes library!",
+  "author": "Brennan Kastner",
   "license": "MPL 2.0",
-  "version": "0.1"
+  "version": "2.0.33"
 }
